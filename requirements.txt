@@ -1,7 +1,5 @@
 Flask
 Flask-Migrate
 Flask-SQLAlchemy==3.0.2
-flask_wtf
-psycopg2
 python-dotenv
 SQLAlchemy
