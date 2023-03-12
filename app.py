@@ -1,7 +1,32 @@
-from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 import os
-app = Flask(__name__)
+from datetime import datetime
+
+from flask import Flask, redirect, render_template, request, send_from_directory, url_for
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__, static_folder='static')
+
+# WEBSITE_HOSTNAME exists only in production environment
+if 'WEBSITE_HOSTNAME' not in os.environ:
+    # local development, where we'll use environment variables
+    print("Loading config.development and environment variables from .env file.")
+    app.config.from_object('azureproject.development')
+else:
+    # production
+    print("Loading config.production.")
+    app.config.from_object('azureproject.production')
+
+app.config.update(
+    SQLALCHEMY_DATABASE_URI=app.config.get('DATABASE_URI'),
+    SQLALCHEMY_TRACK_MODIFICATIONS=False,
+)
+
+# Initialize the database connection
+db = SQLAlchemy(app)
+
+# Enable Flask-Migrate commands "flask db init/migrate/upgrade" to work
+migrate = Migrate(app, db)
 
 # use this method to return to home page
 @app.route('/')
