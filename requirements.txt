@@ -4,3 +4,6 @@ Flask-SQLAlchemy==3.0.2
 python-dotenv
 SQLAlchemy
 flask-mysql
+flask-mysqldb
+mysqlclient
+mysql
