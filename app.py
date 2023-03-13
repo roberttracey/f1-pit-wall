@@ -28,6 +28,9 @@ db = SQLAlchemy(app)
 # Enable Flask-Migrate commands "flask db init/migrate/upgrade" to work
 migrate = Migrate(app, db)
 
+# The import must be done after db initialization due to circular import issue
+from models import Circuits, Constructors
+
 # use this method to return to home page
 @app.route('/')
 def index():

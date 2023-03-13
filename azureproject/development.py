@@ -5,10 +5,10 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 DATABASE_URI = 'mysql://{dbuser}:{dbpass}@{dbhost}/{dbname}'.format(
-    dbuser='robert.tracey',
-    dbpass='i.r8D8UgyeltJ_wC',
-    dbhost='localhost',
-    dbname='f1db'
+    dbuser=os.environ['DBUSER'],
+    dbpass=os.environ['DBPASS'],
+    dbhost=os.environ['DBHOST'],
+    dbname=os.environ['DBNAME']
 )
 
 TIME_ZONE = 'UTC'
