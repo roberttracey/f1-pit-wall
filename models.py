@@ -3,7 +3,10 @@ from sqlalchemy.orm import validates
 
 from app import db
 
+# here i define my data as objects. this information will be used to create my tables. 
+# this will make it easier to deply my database and apply changes to the schema. 
 class Circuit(db.Model):
+    # define the table name.
     __tablename__ = 'circuits'
     circuitId = Column(Integer, primary_key=True, autoincrement=True)
     circuitRef = Column(String(255), nullable=False)
@@ -15,6 +18,7 @@ class Circuit(db.Model):
     alt = Column(Integer)
     url = Column(String(255), nullable=False)
 
+    # add a to string method.
     def __str__(self):
         return self.name
     
