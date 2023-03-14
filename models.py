@@ -201,7 +201,6 @@ class SprintResult(db.Model):
     milliseconds = Column(Integer)
     fastestLap = Column(Integer)
     fastestLapTime = Column(Integer)
-    fastestLapSpeed = Column(Integer)
     statusId = Column(Integer, ForeignKey('status.statusId', ondelete="CASCADE"), nullable=False, default=0)
 
     def __str__(self):

@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: aba2be5ddee1
+Revision ID: 0984f12a7642
 Revises: 
-Create Date: 2023-03-14 17:38:14.085025
+Create Date: 2023-03-14 20:21:25.732134
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'aba2be5ddee1'
+revision = '0984f12a7642'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -197,7 +197,6 @@ def upgrade():
     sa.Column('milliseconds', sa.Integer(), nullable=True),
     sa.Column('fastestLap', sa.Integer(), nullable=True),
     sa.Column('fastestLapTime', sa.Integer(), nullable=True),
-    sa.Column('fastestLapSpeed', sa.Integer(), nullable=True),
     sa.Column('statusId', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['constructorId'], ['constructors.constructorId'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['driverId'], ['drivers.driverId'], ondelete='CASCADE'),

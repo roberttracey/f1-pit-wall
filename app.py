@@ -140,35 +140,236 @@ def import_data():
    constructorCount = 0
    from data import constructors
    # sample: [1,'mclaren','McLaren','British','http://en.wikipedia.org/wiki/McLaren']
-   for con in constructors:
+   for c in constructors:
       constructor = Constructor()
-      constructor.constructorId = con[0]
-      constructor.constructorRef = con[1]
-      constructor.name = con[2]
-      constructor.nationality = con[3]
-      constructor.url = con[4]
+      constructor.constructorId = c[0]
+      constructor.constructorRef = c[1]
+      constructor.name = c[2]
+      constructor.nationality = c[3]
+      constructor.url = c[4]
       db.session.add(constructor)
       constructorCount += 1   
    db.session.commit()
    print(constructorCount, 'constructors have been added!')  
+
+   print('Importing drivers ...')
+   # set counter.
+   driversCount = 0
+   from data import drivers
+   # sample: [855,'zhou',24,'ZHO','Guanyu','Zhou','1999-05-30','Chinese','http://en.wikipedia.org/wiki/Guanyu_Zhou']
+   for d in drivers:
+      driver = Driver()
+      driver.driverId = d[0]
+      driver.driverRef = d[1]
+      driver.number = d[2]
+      driver.code = d[3]
+      driver.forename = d[4]
+      driver.surname = d[5]
+      driver.dob = d[6]
+      driver.nationality = d[7]
+      driver.url = d[8]
+      db.session.add(driver)
+      driversCount += 1    
+   db.session.commit() 
+   print(driversCount, 'drivers have been added!')
+
+   print('Importing status ...')
+   # set counter.
+   statusCount = 0
+   from data import status
+   # sample: [1,'Finished']
+   for s in status:
+      stat = Status()
+      stat.statusId = s[0]
+      stat.status = s[1]
+      db.session.add(stat)
+      statusCount += 1    
+   db.session.commit() 
+   print(statusCount, 'statuses have been added!')
 
    print('Importing constructor results ...')
    # set counter.
    constructorresultsCount = 0
    from data import constructorresults
    # sample: [1,18,1,14,None]
-   for conres in constructorresults:
+   for c in constructorresults:
       constructorresult = ConstructorResult()
-      constructorresult.constructorResultsId = conres[0]
-      constructorresult.raceId = conres[1]
-      constructorresult.constructorId = conres[2]
-      constructorresult.points = conres[3]
-      constructorresult.status = conres[4]
+      constructorresult.constructorResultsId = c[0]
+      constructorresult.raceId = c[1]
+      constructorresult.constructorId = c[2]
+      constructorresult.points = c[3]
+      constructorresult.status = c[4]
       db.session.add(constructorresult)
       constructorresultsCount += 1    
    db.session.commit() 
    print(constructorresultsCount, 'constructor results have been added!')
-   
+
+   print('Importing constructor standings  ...')
+   # set counter.
+   constructorstandingsCount = 0
+   from data import constructorstandings
+   # sample: [1,18,1,14,1,'1',1]
+   for c in constructorstandings:
+      constructorstanding = ConstructorStanding()
+      constructorstanding.constructorStandingsId = c[0]
+      constructorstanding.raceId = c[1]
+      constructorstanding.constructorId = c[2]
+      constructorstanding.points = c[3]
+      constructorstanding.position = c[4]
+      constructorstanding.positionText = c[5]
+      constructorstanding.wins = c[6]
+      db.session.add(constructorstanding)
+      constructorstandingsCount += 1    
+   db.session.commit() 
+   print(constructorstandingsCount, 'constructor standings have been added!')
+
+   print('Importing driver standings ...')
+   # set counter.
+   driverstandingsCount = 0
+   from data import driverstandings
+   # sample: [1,18,1,10,1,'1',1]
+   for d in driverstandings:
+      driverstanding = DriverStanding()
+      driverstanding.driverStandingsId = d[0]
+      driverstanding.raceId = d[1]
+      driverstanding.driverId = d[2]
+      driverstanding.points = d[3]
+      driverstanding.position = d[4]
+      driverstanding.positionText = d[5]
+      driverstanding.wins = d[6]
+      db.session.add(driverstanding)
+      driverstandingsCount += 1    
+   db.session.commit() 
+   print(driverstandingsCount, 'driver standings have been added!')
+
+   print('Importing pit stops ...')
+   # set counter.
+   pitstopsCount = 0
+   from data import pitstops
+   # sample: [841,153,1,1,'17:05:23','26.898',26898]
+   for ps in pitstops:
+      pitstop = PitStop()
+      pitstop.raceId = ps[0]
+      pitstop.driverId = ps[1]
+      pitstop.stop = ps[2]
+      pitstop.lap = ps[3]
+      pitstop.time = ps[4]
+      pitstop.duration = ps[5]
+      pitstop.milliseconds = ps[6]
+      db.session.add(pitstop)
+      pitstopsCount += 1    
+   db.session.commit() 
+   print(pitstopsCount, 'pit stops have been added!')
+
+   print('Importing qualifying ...')
+   # set counter.
+   qualifyingCount = 0
+   from data import qualifying
+   # sample: [1,18,1,1,22,1,'1:26.572','1:25.187','1:26.714']
+   for q in qualifying:
+      quali = Qualifying()
+      quali.qualifyId = q[0]
+      quali.raceId = q[1]
+      quali.driverId = q[2]
+      quali.constructorId = q[3]
+      quali.number = q[4]
+      quali.position = q[5]
+      quali.q1 = q[6]
+      quali.q2 = q[7]
+      quali.q3 = q[8]
+      db.session.add(quali)
+      qualifyingCount += 1    
+   db.session.commit() 
+   print(qualifyingCount, 'qualifying sessions have been added!')
+
+   print('Importing results 01 ...')
+   # set counter.
+   results01Count = 0
+   from data import results01
+   # sample: [1,18,1,1,22,1,1,'1',1,10,58,'1:34:50.616',5690616,39,2,'1:27.452','218.300',1]
+   for r in results01:
+      result = Result()
+      result.resultId = r[0]
+      result.raceId = r[1]
+      result.driverId = r[2]
+      result.constructorId = r[3]
+      result.number = r[4]
+      result.grid = r[5]
+      result.position = r[6]
+      result.positionText = r[7]
+      result.positionOrder = r[8]
+      result.points = r[9]
+      result.laps = r[10]
+      result.time = r[11]
+      result.milliseconds = r[12]
+      result.fastestLap = r[13]
+      result.rank = r[14]
+      result.fastestLapTime = r[15]
+      result.fastestLapSpeed = r[16]
+      result.statusId = r[17]
+      db.session.add(result)
+      results01Count += 1    
+   db.session.commit() 
+   print(results01Count, 'results 01 have been added!')
+
+   print('Importing results 02 ...')
+   # set counter.
+   results02Count = 0
+   from data import results02
+   # sample: [1,18,1,1,22,1,1,'1',1,10,58,'1:34:50.616',5690616,39,2,'1:27.452','218.300',1]
+   for r in results02:
+      result = Result()
+      result.resultId = r[0]
+      result.raceId = r[1]
+      result.driverId = r[2]
+      result.constructorId = r[3]
+      result.number = r[4]
+      result.grid = r[5]
+      result.position = r[6]
+      result.positionText = r[7]
+      result.positionOrder = r[8]
+      result.points = r[9]
+      result.laps = r[10]
+      result.time = r[11]
+      result.milliseconds = r[12]
+      result.fastestLap = r[13]
+      result.rank = r[14]
+      result.fastestLapTime = r[15]
+      result.fastestLapSpeed = r[16]
+      result.statusId = r[17]
+      db.session.add(result)
+      results02Count += 1    
+   db.session.commit() 
+   print(results02Count, 'results 02 have been added!')
+
+   print('Importing sprint results ...')
+   # set counter.
+   sprintresultsCount = 0
+   from data import sprintresults
+   # sample: [1,1061,830,9,33,2,1,'1',1,3,17,'25:38.426',1538426,14,'1:30.013',1]
+   for sr in sprintresults:
+      sprintresult = SprintResult()
+      sprintresult.sprintResultId = sr[0]
+      sprintresult.raceId = sr[1]
+      sprintresult.driverId = sr[2]
+      sprintresult.constructorId = sr[3]
+      sprintresult.number = sr[4]
+      sprintresult.grid = sr[5]
+      sprintresult.position = sr[6]
+      sprintresult.positionText = sr[7]
+      sprintresult.positionOrder = sr[8]
+      sprintresult.points = sr[9]
+      sprintresult.laps = sr[10]
+      sprintresult.time = sr[11]
+      sprintresult.milliseconds = sr[12]
+      sprintresult.fastestLap = sr[13]
+      sprintresult.fastestLapTime = sr[14]
+      sprintresult.statusId = sr[15]
+      db.session.add(sprintresult)
+      sprintresultsCount += 1    
+   db.session.commit() 
+   print(sprintresultsCount, 'sprint results have been added!')
+
    # return to home page.
    return render_template('index.html')
 
