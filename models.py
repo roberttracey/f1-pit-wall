@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Float, Date, Time
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Float, Date, Time, Boolean
 from sqlalchemy.orm import validates
 
 from app import db
@@ -98,10 +98,56 @@ class LapTime(db.Model):
     lap = Column(Integer, nullable=False, primary_key=True)
     position = Column(Integer)
     time = Column(String(255))
-    milliseconds = Column(Integer)
+    milliseconds = Column(Integer)    
 
     def __str__(self):
         return self.raceId
+    
+class Lap(db.Model):
+    __tablename__ = 'laps'
+    # lap times provided by fastf1
+    year = Column(Integer, ForeignKey('races.raceId', ondelete="CASCADE"), nullable=False, default=0, primary_key=True)
+    event = Column(String(50), primary_key=True)
+    session = Column(String(10), primary_key=True)
+    time = Column(Integer)
+    driver = Column(String(3), ForeignKey('drivers.driverRef', ondelete="CASCADE"), nullable=False)
+    drivernumber = Column(String(3))
+    laptime = Column(Integer)
+    lapnumber = Column(Integer)
+    stint = Column(Integer)
+    pitouttime = Column(Integer)
+    pitintime = Column(Integer)
+    sector1time = Column(Integer)
+    sector2time = Column(Integer)
+    sector3time = Column(Integer)
+    sector1sessiontime = Column(Integer)
+    sector2sessiontime = Column(Integer)
+    sector3sessiontime  = Column(Integer)
+    speedi1  = Column(Float)
+    speedi2  = Column(Float)
+    speedfl  = Column(Float)
+    speedst  = Column(Float)
+    ispersonalbest = Column(Boolean)
+    compound = Column(String(10))
+    tyrelife  = Column(Float)
+    freshtyre = Column(Boolean)
+    team = Column(String(255))
+    lapstarttime = Column(Integer)
+    lapstartdate = Column(Integer)
+    trackstatus = Column(Integer, ForeignKey('trackstatus.statusId', ondelete="CASCADE"))
+    isaccurate = Column(Boolean)    
+
+    def __str__(self):
+        return self.year
+    
+class TrackStatus(db.Model):
+    # sample: ‘1’: track clear, ‘2’: yellow flag, ‘3’: unused, ‘4’: safety car, ‘5’: red flag, ‘6’: vsc, ‘7’: vsc ending
+    __tablename__ = 'trackstatus'
+    statusId = Column(Integer, primary_key=True)
+    status = Column(String(50))
+
+    def __str__(self):
+        return self.status
     
 
 class PitStop(db.Model):

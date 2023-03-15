@@ -1,5 +1,6 @@
 # import the required modules.
 import os
+import fastf1
 from datetime import datetime
 from flask import Flask, redirect, render_template, request, send_from_directory, url_for
 from flask_migrate import Migrate
@@ -31,7 +32,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 # import must be done after db initialization due to circular import issue.
-from models import Circuit, ConstructorResult, ConstructorStanding, Race, Season, Constructor, DriverStanding, Driver, LapTime, PitStop, Qualifying, Result, SprintResult, Status
+from models import Circuit, ConstructorResult, ConstructorStanding, Race, Season, Constructor, DriverStanding, Driver, LapTime, PitStop, Qualifying, Result, SprintResult, Status, Lap, TrackStatus
 
 # use this method to return to home page.
 @app.route('/')
@@ -66,13 +67,24 @@ def settings():
    return render_template('settings.html')
 
 # use this method to return to standing page.
+@app.route('/import_laps', methods=['POST'])
+def import_laps():
+   races = Race.query.where(Race.year == 2023).all()
+   for r in races:
+      print(r.year, r.name)
+   # print(races)
+   # return to home page.
+   return render_template('index.html')
+
+
+# use this method to return to standing page.
 @app.route('/import_data', methods=['POST'])
 def import_data():
    print('Data import requested.')  
    print('Importing seasons ...')
    # set counter.
    seasonCount = 0
-   from data import seasons
+   from data import seasons  
    # sample: [2009,'http://en.wikipedia.org/wiki/2009_Formula_One_season']
    for sn in seasons:
       season = Season()
@@ -369,6 +381,328 @@ def import_data():
       sprintresultsCount += 1    
    db.session.commit() 
    print(sprintresultsCount, 'sprint results have been added!')
+
+   print('Importing lap times ...')
+   # set counter.
+   laptimes01Count = 0
+   from data import laptimes01
+   # sample: [841,20,1,1,'1:38.109',98109]
+   for lt in laptimes01:
+      laptime = LapTime()
+      laptime.raceId = lt[0]
+      laptime.driverId = lt[1]
+      laptime.lap = lt[2]
+      laptime.position = lt[3]
+      laptime.time = lt[4]
+      laptime.milliseconds = lt[5]
+      db.session.add(laptime)
+      laptimes01Count += 1    
+   db.session.commit() 
+   print(laptimes01Count, 'lap times stops have been added!')
+
+   # set counter.
+   laptimes02Count = 0
+   from data import laptimes02
+   # sample: [841,20,1,1,'1:38.109',98109]
+   for lt in laptimes02:
+      laptime = LapTime()
+      laptime.raceId = lt[0]
+      laptime.driverId = lt[1]
+      laptime.lap = lt[2]
+      laptime.position = lt[3]
+      laptime.time = lt[4]
+      laptime.milliseconds = lt[5]
+      db.session.add(laptime)
+      laptimes02Count += 1    
+   db.session.commit() 
+   print(laptimes02Count, 'lap times stops have been added!')
+
+   # set counter.
+   laptimes03Count = 0
+   from data import laptimes03
+   # sample: [841,20,1,1,'1:38.109',98109]
+   for lt in laptimes03:
+      laptime = LapTime()
+      laptime.raceId = lt[0]
+      laptime.driverId = lt[1]
+      laptime.lap = lt[2]
+      laptime.position = lt[3]
+      laptime.time = lt[4]
+      laptime.milliseconds = lt[5]
+      db.session.add(laptime)
+      laptimes03Count += 1    
+   db.session.commit() 
+   print(laptimes03Count, 'lap times stops have been added!')
+
+   # set counter.
+   laptimes04Count = 0
+   from data import laptimes04
+   # sample: [841,20,1,1,'1:38.109',98109]
+   for lt in laptimes04:
+      laptime = LapTime()
+      laptime.raceId = lt[0]
+      laptime.driverId = lt[1]
+      laptime.lap = lt[2]
+      laptime.position = lt[3]
+      laptime.time = lt[4]
+      laptime.milliseconds = lt[5]
+      db.session.add(laptime)
+      laptimes04Count += 1    
+   db.session.commit() 
+   print(laptimes04Count, 'lap times stops have been added!')
+
+   # set counter.
+   laptimes05Count = 0
+   from data import laptimes05
+   # sample: [841,20,1,1,'1:38.109',98109]
+   for lt in laptimes05:
+      laptime = LapTime()
+      laptime.raceId = lt[0]
+      laptime.driverId = lt[1]
+      laptime.lap = lt[2]
+      laptime.position = lt[3]
+      laptime.time = lt[4]
+      laptime.milliseconds = lt[5]
+      db.session.add(laptime)
+      laptimes05Count += 1    
+   db.session.commit() 
+   print(laptimes05Count, 'lap times stops have been added!')
+
+   # set counter.
+   laptimes06Count = 0
+   from data import laptimes06
+   # sample: [841,20,1,1,'1:38.109',98109]
+   for lt in laptimes06:
+      laptime = LapTime()
+      laptime.raceId = lt[0]
+      laptime.driverId = lt[1]
+      laptime.lap = lt[2]
+      laptime.position = lt[3]
+      laptime.time = lt[4]
+      laptime.milliseconds = lt[5]
+      db.session.add(laptime)
+      laptimes06Count += 1    
+   db.session.commit() 
+   print(laptimes06Count, 'lap times stops have been added!')
+
+   # set counter.
+   laptimes07Count = 0
+   from data import laptimes07
+   # sample: [841,20,1,1,'1:38.109',98109]
+   for lt in laptimes07:
+      laptime = LapTime()
+      laptime.raceId = lt[0]
+      laptime.driverId = lt[1]
+      laptime.lap = lt[2]
+      laptime.position = lt[3]
+      laptime.time = lt[4]
+      laptime.milliseconds = lt[5]
+      db.session.add(laptime)
+      laptimes07Count += 1    
+   db.session.commit() 
+   print(laptimes07Count, 'lap times stops have been added!')
+
+   # set counter.
+   laptimes08Count = 0
+   from data import laptimes08
+   # sample: [841,20,1,1,'1:38.109',98109]
+   for lt in laptimes08:
+      laptime = LapTime()
+      laptime.raceId = lt[0]
+      laptime.driverId = lt[1]
+      laptime.lap = lt[2]
+      laptime.position = lt[3]
+      laptime.time = lt[4]
+      laptime.milliseconds = lt[5]
+      db.session.add(laptime)
+      laptimes08Count += 1    
+   db.session.commit() 
+   print(laptimes08Count, 'lap times stops have been added!')
+
+   # set counter.
+   laptimes09Count = 0
+   from data import laptimes09
+   # sample: [841,20,1,1,'1:38.109',98109]
+   for lt in laptimes09:
+      laptime = LapTime()
+      laptime.raceId = lt[0]
+      laptime.driverId = lt[1]
+      laptime.lap = lt[2]
+      laptime.position = lt[3]
+      laptime.time = lt[4]
+      laptime.milliseconds = lt[5]
+      db.session.add(laptime)
+      laptimes09Count += 1    
+   db.session.commit() 
+   print(laptimes09Count, 'lap times stops have been added!')
+
+   # set counter.
+   laptimes10Count = 0
+   from data import laptimes10
+   # sample: [841,20,1,1,'1:38.109',98109]
+   for lt in laptimes10:
+      laptime = LapTime()
+      laptime.raceId = lt[0]
+      laptime.driverId = lt[1]
+      laptime.lap = lt[2]
+      laptime.position = lt[3]
+      laptime.time = lt[4]
+      laptime.milliseconds = lt[5]
+      db.session.add(laptime)
+      laptimes10Count += 1    
+   db.session.commit() 
+   print(laptimes10Count, 'lap times stops have been added!')
+
+   # set counter.
+   laptimes11Count = 0
+   from data import laptimes11
+   # sample: [841,20,1,1,'1:38.109',98109]
+   for lt in laptimes11:
+      laptime = LapTime()
+      laptime.raceId = lt[0]
+      laptime.driverId = lt[1]
+      laptime.lap = lt[2]
+      laptime.position = lt[3]
+      laptime.time = lt[4]
+      laptime.milliseconds = lt[5]
+      db.session.add(laptime)
+      laptimes11Count += 1    
+   db.session.commit() 
+   print(laptimes11Count, 'lap times stops have been added!')
+
+   # set counter.
+   laptimes12Count = 0
+   from data import laptimes12
+   # sample: [841,20,1,1,'1:38.109',98109]
+   for lt in laptimes12:
+      laptime = LapTime()
+      laptime.raceId = lt[0]
+      laptime.driverId = lt[1]
+      laptime.lap = lt[2]
+      laptime.position = lt[3]
+      laptime.time = lt[4]
+      laptime.milliseconds = lt[5]
+      db.session.add(laptime)
+      laptimes12Count += 1    
+   db.session.commit() 
+   print(laptimes12Count, 'lap times stops have been added!')
+
+   # set counter.
+   laptimes13Count = 0
+   from data import laptimes13
+   # sample: [841,20,1,1,'1:38.109',98109]
+   for lt in laptimes13:
+      laptime = LapTime()
+      laptime.raceId = lt[0]
+      laptime.driverId = lt[1]
+      laptime.lap = lt[2]
+      laptime.position = lt[3]
+      laptime.time = lt[4]
+      laptime.milliseconds = lt[5]
+      db.session.add(laptime)
+      laptimes13Count += 1    
+   db.session.commit() 
+   print(laptimes13Count, 'lap times stops have been added!')
+
+   # set counter.
+   laptimes14Count = 0
+   from data import laptimes14
+   # sample: [841,20,1,1,'1:38.109',98109]
+   for lt in laptimes14:
+      laptime = LapTime()
+      laptime.raceId = lt[0]
+      laptime.driverId = lt[1]
+      laptime.lap = lt[2]
+      laptime.position = lt[3]
+      laptime.time = lt[4]
+      laptime.milliseconds = lt[5]
+      db.session.add(laptime)
+      laptimes14Count += 1    
+   db.session.commit() 
+   print(laptimes14Count, 'lap times stops have been added!')
+
+   # set counter.
+   laptimes15Count = 0
+   from data import laptimes15
+   # sample: [841,20,1,1,'1:38.109',98109]
+   for lt in laptimes15:
+      laptime = LapTime()
+      laptime.raceId = lt[0]
+      laptime.driverId = lt[1]
+      laptime.lap = lt[2]
+      laptime.position = lt[3]
+      laptime.time = lt[4]
+      laptime.milliseconds = lt[5]
+      db.session.add(laptime)
+      laptimes15Count += 1    
+   db.session.commit() 
+   print(laptimes15Count, 'lap times stops have been added!')
+
+   # set counter.
+   laptimes16Count = 0
+   from data import laptimes16
+   # sample: [841,20,1,1,'1:38.109',98109]
+   for lt in laptimes16:
+      laptime = LapTime()
+      laptime.raceId = lt[0]
+      laptime.driverId = lt[1]
+      laptime.lap = lt[2]
+      laptime.position = lt[3]
+      laptime.time = lt[4]
+      laptime.milliseconds = lt[5]
+      db.session.add(laptime)
+      laptimes16Count += 1    
+   db.session.commit() 
+   print(laptimes16Count, 'lap times stops have been added!')
+
+   # set counter.
+   laptimes17Count = 0
+   from data import laptimes17
+   # sample: [841,20,1,1,'1:38.109',98109]
+   for lt in laptimes17:
+      laptime = LapTime()
+      laptime.raceId = lt[0]
+      laptime.driverId = lt[1]
+      laptime.lap = lt[2]
+      laptime.position = lt[3]
+      laptime.time = lt[4]
+      laptime.milliseconds = lt[5]
+      db.session.add(laptime)
+      laptimes17Count += 1    
+   db.session.commit() 
+   print(laptimes17Count, 'lap times stops have been added!')
+
+   # add track status
+   # sample: ‘1’: track clear, ‘2’: yellow flag, ‘3’: unused, ‘4’: safety car, ‘5’: red flag, ‘6’: vsc, ‘7’: vsc ending
+   ts01 = TrackStatus()
+   ts01.statusId = 1
+   ts01.status = 'Track Clear'
+   db.session.add(ts01)
+   ts02 = TrackStatus()
+   ts02.statusId = 2
+   ts02.status = 'Yellow Flag'
+   db.session.add(ts02)
+   ts03 = TrackStatus()
+   ts03.statusId = 3
+   ts03.status = 'Unused'
+   db.session.add(ts03)
+   ts04 = TrackStatus()
+   ts04.statusId = 4
+   ts04.status = 'Safety Car'
+   db.session.add(ts04)
+   ts05 = TrackStatus()
+   ts05.statusId = 5
+   ts05.status = 'Red Flag'
+   db.session.add(ts05)
+   ts06 = TrackStatus()
+   ts06.statusId = 6
+   ts06.status = 'Virtual Safety Car'
+   db.session.add(ts06)
+   ts07 = TrackStatus()
+   ts07.statusId = 7
+   ts07.status = 'Virtual Safety Car Ending'
+   db.session.add(ts07)
+   db.session.commit() 
 
    # return to home page.
    return render_template('index.html')

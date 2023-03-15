@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 0984f12a7642
+Revision ID: fc5f6fd5a398
 Revises: 
-Create Date: 2023-03-14 20:21:25.732134
+Create Date: 2023-03-15 19:43:47.177504
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '0984f12a7642'
+revision = 'fc5f6fd5a398'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -59,6 +59,11 @@ def upgrade():
     op.create_table('status',
     sa.Column('statusId', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('status', sa.String(length=255), nullable=True),
+    sa.PrimaryKeyConstraint('statusId')
+    )
+    op.create_table('trackstatus',
+    sa.Column('statusId', sa.Integer(), nullable=False),
+    sa.Column('status', sa.String(length=10), nullable=True),
     sa.PrimaryKeyConstraint('statusId')
     )
     op.create_table('races',
@@ -117,6 +122,42 @@ def upgrade():
     sa.ForeignKeyConstraint(['driverId'], ['drivers.driverId'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['raceId'], ['races.raceId'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('driverStandingsId')
+    )
+    op.create_table('laps',
+    sa.Column('year', sa.Integer(), nullable=False),
+    sa.Column('event', sa.String(length=50), nullable=False),
+    sa.Column('session', sa.String(length=10), nullable=False),
+    sa.Column('time', sa.Integer(), nullable=True),
+    sa.Column('driver', sa.String(length=3), nullable=False),
+    sa.Column('drivernumber', sa.String(length=3), nullable=True),
+    sa.Column('laptime', sa.Integer(), nullable=True),
+    sa.Column('lapnumber', sa.Integer(), nullable=True),
+    sa.Column('stint', sa.Integer(), nullable=True),
+    sa.Column('pitouttime', sa.Integer(), nullable=True),
+    sa.Column('pitintime', sa.Integer(), nullable=True),
+    sa.Column('sector1time', sa.Integer(), nullable=True),
+    sa.Column('sector2time', sa.Integer(), nullable=True),
+    sa.Column('sector3time', sa.Integer(), nullable=True),
+    sa.Column('sector1sessiontime', sa.Integer(), nullable=True),
+    sa.Column('sector2sessiontime', sa.Integer(), nullable=True),
+    sa.Column('sector3sessiontime', sa.Integer(), nullable=True),
+    sa.Column('speedi1', sa.Float(), nullable=True),
+    sa.Column('speedi2', sa.Float(), nullable=True),
+    sa.Column('speedfl', sa.Float(), nullable=True),
+    sa.Column('speedst', sa.Float(), nullable=True),
+    sa.Column('ispersonalbest', sa.Boolean(), nullable=True),
+    sa.Column('compound', sa.String(length=10), nullable=True),
+    sa.Column('tyrelife', sa.Float(), nullable=True),
+    sa.Column('freshtyre', sa.Boolean(), nullable=True),
+    sa.Column('team', sa.String(length=255), nullable=True),
+    sa.Column('lapstarttime', sa.Integer(), nullable=True),
+    sa.Column('lapstartdate', sa.Integer(), nullable=True),
+    sa.Column('trackstatus', sa.Integer(), nullable=True),
+    sa.Column('isaccurate', sa.Boolean(), nullable=True),
+    sa.ForeignKeyConstraint(['driver'], ['drivers.driverRef'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['trackstatus'], ['trackstatus.statusId'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['year'], ['races.raceId'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('year', 'event', 'session')
     )
     op.create_table('laptimes',
     sa.Column('raceId', sa.Integer(), nullable=False),
@@ -214,10 +255,12 @@ def downgrade():
     op.drop_table('qualifying')
     op.drop_table('pitstops')
     op.drop_table('laptimes')
+    op.drop_table('laps')
     op.drop_table('driverstandings')
     op.drop_table('constructorstandings')
     op.drop_table('constructorresults')
     op.drop_table('races')
+    op.drop_table('trackstatus')
     op.drop_table('status')
     op.drop_table('seasons')
     op.drop_table('drivers')

@@ -7,3 +7,5 @@ flask-mysql
 flask-mysqldb
 mysqlclient
 mysql
+fastf1
+pandas

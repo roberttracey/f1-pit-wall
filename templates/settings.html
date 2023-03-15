@@ -18,6 +18,13 @@
               </div>       
           </div>
         </form> 
+        <form method="POST" action="{{url_for('import_laps')}}">
+          <div class="col-md-6 mx-auto text-center">            
+              <div class="d-grid gap-2 d-sm-flex justify-content-sm-center my-2">
+                <button type="submit" class="btn btn-primary btn-lg px-4 gap-3">Import Laps</button>
+              </div>       
+          </div>
+        </form> 
         <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg px-4 gap-3">Back home</a>
       </div>  
      </main>      
