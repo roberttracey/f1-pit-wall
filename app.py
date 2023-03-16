@@ -1,10 +1,13 @@
 # import the required modules.
+import math
 import os
 import fastf1
+import pandas as pd
 from datetime import datetime
 from flask import Flask, redirect, render_template, request, send_from_directory, url_for
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import create_engine
 
 app = Flask(__name__, static_folder='static')
 
@@ -69,643 +72,330 @@ def settings():
 # use this method to return to standing page.
 @app.route('/import_laps', methods=['POST'])
 def import_laps():
-   races = Race.query.where(Race.year == 2023).all()
+   races = Race.query.where(Race.year == 2022).all()
+   # get_session(2022, 'Bahrain', 'Race')
+   print('Importing laps ...')
    for r in races:
-      print(r.year, r.name)
+      # print(r.year, r.round, 'Race')
+      session = fastf1.get_session(r.year, r.round, 'Race')
+      print('Importing:', r.year, r.name)
+      # load the session
+      session.load()
+      # get laps for given session
+      laps = session.laps
+      # store session data in dataframe
+      df = pd.DataFrame(laps)
+      # df = df.reset_index()  # make sure indexes pair with number of rows
+      for i in df.index:
+         lap = Lap()
+         lap.raceId = r.raceId
+         lap.time = df['Time'][i]
+         lap.driver = df['Driver'][i]
+         lap.drivernumber = df['DriverNumber'][i]
+         lap.laptime = df['LapTime'][i]
+         lap.lapnumber = df['LapNumber'][i]
+         lap.stint = df['Stint'][i]
+         lap.pitouttime = df['PitOutTime'][i]
+         lap.pitintime = df['PitInTime'][i]
+         lap.sector1time = df['Sector1Time'][i]
+         lap.sector2time = df['Sector2Time'][i]
+         lap.sector3time = df['Sector3Time'][i]
+         lap.sector1sessiontime = df['Sector1SessionTime'][i]
+         lap.sector2sessiontime = df['Sector2SessionTime'][i]
+         lap.sector3sessiontime = df['Sector3SessionTime'][i]
+
+         # avoid 'nan' value as they are no allow in MySQL.
+         if math.isnan (df['SpeedI1'][i]):
+            lap.speedi1 = 0
+         else:
+            lap.speedi1 = df['SpeedI1'][i]
+
+         # lap.speedi2 = df['SpeedI2'][i]
+         if math.isnan (df['SpeedI2'][i]):
+            lap.speedi2 = 0
+         else:
+            lap.speedi2 = df['SpeedI2'][i]
+
+         # lap.speedfl = df['SpeedFL'][i]
+         if math.isnan (df['SpeedFL'][i]):
+            lap.speedfl = 0
+         else:
+            lap.speedfl = df['SpeedFL'][i]
+
+         # lap.speedst = df['SpeedST'][i]
+         if math.isnan (df['SpeedST'][i]):
+            lap.speedst = 0
+         else:
+            lap.speedst = df['SpeedST'][i]
+         
+         # lap.ispersonalbest = df['IsPersonalBest'][i]
+         if math.isnan (df['IsPersonalBest'][i]):
+            lap.ispersonalbest = 0
+         else:
+            lap.ispersonalbest = df['IsPersonalBest'][i]          
+         
+         lap.compound = df['Compound'][i]
+
+         # lap.tyrelife = df['TyreLife'][i]
+         if math.isnan (df['TyreLife'][i]):
+            lap.tyrelife = 0
+         else:
+            lap.tyrelife = df['TyreLife'][i]  
+
+         # lap.freshtyre = df['FreshTyre'][i]
+         if math.isnan (df['FreshTyre'][i]):
+            lap.freshtyre = 0
+         else:
+            lap.freshtyre = df['FreshTyre'][i]  
+
+         lap.team = df['Team'][i]
+         lap.lapstarttime = df['LapStartTime'][i]
+         lap.lapstartdate = df['LapStartDate'][i]
+         lap.trackstatus = df['TrackStatus'][i]
+
+         # lap.isaccurate = df['IsAccurate'][i]
+         if math.isnan (df['IsAccurate'][i]):
+            lap.isaccurate = 0
+         else:
+            lap.isaccurate = df['IsAccurate'][i]  
+
+         db.session.add(lap) 
+      db.session.commit()
+
    # print(races)
    # return to home page.
    return render_template('index.html')
 
-
 # use this method to return to standing page.
 @app.route('/import_data', methods=['POST'])
 def import_data():
-   print('Data import requested.')  
-   print('Importing seasons ...')
-   # set counter.
-   seasonCount = 0
-   from data import seasons  
-   # sample: [2009,'http://en.wikipedia.org/wiki/2009_Formula_One_season']
-   for sn in seasons:
-      season = Season()
-      season.year = sn[0]
-      season.url = sn[1]
-      db.session.add(season)
-      seasonCount += 1   
-   db.session.commit()
-   print(seasonCount, 'seasons have been added!')
+   # create engine.
+   engine = create_engine(app.config.get('DATABASE_URI'))
+   print('Data import requested.')    
+
+   print('Importing seasons ...')  
+   from data import seasons
+   # define table columns.
+   columns = ['year', 'url']
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(seasons, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='seasons', con=engine, if_exists='append', index=False)
 
    print('Importing circuits ...')
-   # set counter.
-   circuitCount = 0
    from data import circuits
-   # sample: [1,'albert_park','Albert Park Grand Prix Circuit','Melbourne','Australia',-37.8497,144.968,10,'http://en.wikipedia.org/wiki/Melbourne_Grand_Prix_Circuit']
-   for cir in circuits:
-      circuit = Circuit()
-      circuit.circuitId = cir[0]
-      circuit.circuitRef = cir[1]
-      circuit.name = cir[2]
-      circuit.location = cir[3]
-      circuit.country = cir[4]
-      circuit.lat = cir[5]
-      circuit.lng = cir[6]
-      circuit.alt = cir[7]
-      circuit.url = cir[8]
-      db.session.add(circuit)
-      circuitCount += 1   
-   db.session.commit()
-   print(circuitCount, 'circuits have been added!')
-   
+   # define table columns.
+   columns = ['circuitId', 'circuitRef', 'name', 'location', 'country', 'lat', 'lng', 'alt', 'url']
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(circuits, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='circuits', con=engine, if_exists='append', index=False)  
 
    print('Importing races ...')
-   # set counter.
-   raceCount = 0
    from data import races
-   # sample: [1,2009,1,1,'Australian Grand Prix','2009-03-29','06:00:00','http://en.wikipedia.org/wiki/2009_Australian_Grand_Prix',None,None,None,None,None,None,None,None,None,None]
-   for rs in races:
-      race = Race()
-      race.raceId = rs[0]
-      race.year = rs[1]
-      race.round = rs[2]
-      race.circuitId = rs[3]
-      race.name = rs[4]
-      race.date = rs[5]
-      race.time = rs[6]
-      race.url = rs[7]
-      race.fp1_date = rs[8]
-      race.fp1_time = rs[9]
-      race.fp2_date = rs[10]
-      race.fp2_time = rs[11]
-      race.fp3_date = rs[12]
-      race.fp3_time = rs[13]
-      race.quali_date = rs[14]
-      race.quali_time = rs[15]
-      race.sprint_date = rs[16]
-      race.sprint_time = rs[17]
-      db.session.add(race)
-      raceCount += 1  
-   db.session.commit() 
-   print(raceCount, 'races have been added!')
+   # define table columns.
+   columns = ['raceId', 'year', 'round', 'circuitId', 'name', 'date', 'time', 'url', 'fp1_date', 'fp1_time', 'fp2_date', 'fp2_time', 'fp3_date', 'fp3_time', 'quali_date', 'quali_time', 'sprint_date', 'sprint_time']
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(races, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='races', con=engine, if_exists='append', index=False) 
 
    print('Importing constructors ...')
-   # set counter.
-   constructorCount = 0
    from data import constructors
-   # sample: [1,'mclaren','McLaren','British','http://en.wikipedia.org/wiki/McLaren']
-   for c in constructors:
-      constructor = Constructor()
-      constructor.constructorId = c[0]
-      constructor.constructorRef = c[1]
-      constructor.name = c[2]
-      constructor.nationality = c[3]
-      constructor.url = c[4]
-      db.session.add(constructor)
-      constructorCount += 1   
-   db.session.commit()
-   print(constructorCount, 'constructors have been added!')  
+   # define table columns.
+   columns = ['constructorId', 'constructorRef', 'name', 'nationality', 'url']
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(constructors, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='constructors', con=engine, if_exists='append', index=False)  
 
    print('Importing drivers ...')
-   # set counter.
-   driversCount = 0
    from data import drivers
-   # sample: [855,'zhou',24,'ZHO','Guanyu','Zhou','1999-05-30','Chinese','http://en.wikipedia.org/wiki/Guanyu_Zhou']
-   for d in drivers:
-      driver = Driver()
-      driver.driverId = d[0]
-      driver.driverRef = d[1]
-      driver.number = d[2]
-      driver.code = d[3]
-      driver.forename = d[4]
-      driver.surname = d[5]
-      driver.dob = d[6]
-      driver.nationality = d[7]
-      driver.url = d[8]
-      db.session.add(driver)
-      driversCount += 1    
-   db.session.commit() 
-   print(driversCount, 'drivers have been added!')
+   # define table columns.
+   columns = ['driverId', 'driverRef', 'number', 'code', 'forename', 'surname', 'dob', 'nationality', 'url']
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(drivers, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='drivers', con=engine, if_exists='append', index=False) 
 
    print('Importing status ...')
-   # set counter.
-   statusCount = 0
    from data import status
-   # sample: [1,'Finished']
-   for s in status:
-      stat = Status()
-      stat.statusId = s[0]
-      stat.status = s[1]
-      db.session.add(stat)
-      statusCount += 1    
-   db.session.commit() 
-   print(statusCount, 'statuses have been added!')
+   # define table columns.
+   columns = ['statusId', 'status']
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(status, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='status', con=engine, if_exists='append', index=False)  
 
    print('Importing constructor results ...')
-   # set counter.
-   constructorresultsCount = 0
    from data import constructorresults
-   # sample: [1,18,1,14,None]
-   for c in constructorresults:
-      constructorresult = ConstructorResult()
-      constructorresult.constructorResultsId = c[0]
-      constructorresult.raceId = c[1]
-      constructorresult.constructorId = c[2]
-      constructorresult.points = c[3]
-      constructorresult.status = c[4]
-      db.session.add(constructorresult)
-      constructorresultsCount += 1    
-   db.session.commit() 
-   print(constructorresultsCount, 'constructor results have been added!')
+   # define table columns.
+   columns = ['constructorResultsId', 'raceId', 'constructorId', 'points', 'status']
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(constructorresults, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='constructorresults', con=engine, if_exists='append', index=False)
 
    print('Importing constructor standings  ...')
-   # set counter.
-   constructorstandingsCount = 0
    from data import constructorstandings
-   # sample: [1,18,1,14,1,'1',1]
-   for c in constructorstandings:
-      constructorstanding = ConstructorStanding()
-      constructorstanding.constructorStandingsId = c[0]
-      constructorstanding.raceId = c[1]
-      constructorstanding.constructorId = c[2]
-      constructorstanding.points = c[3]
-      constructorstanding.position = c[4]
-      constructorstanding.positionText = c[5]
-      constructorstanding.wins = c[6]
-      db.session.add(constructorstanding)
-      constructorstandingsCount += 1    
-   db.session.commit() 
-   print(constructorstandingsCount, 'constructor standings have been added!')
+   # define table columns.
+   columns = ['constructorStandingsId', 'raceId', 'constructorId', 'points', 'position', 'positionText', 'wins']
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(constructorstandings, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='constructorstandings', con=engine, if_exists='append', index=False)
 
    print('Importing driver standings ...')
-   # set counter.
-   driverstandingsCount = 0
    from data import driverstandings
-   # sample: [1,18,1,10,1,'1',1]
-   for d in driverstandings:
-      driverstanding = DriverStanding()
-      driverstanding.driverStandingsId = d[0]
-      driverstanding.raceId = d[1]
-      driverstanding.driverId = d[2]
-      driverstanding.points = d[3]
-      driverstanding.position = d[4]
-      driverstanding.positionText = d[5]
-      driverstanding.wins = d[6]
-      db.session.add(driverstanding)
-      driverstandingsCount += 1    
-   db.session.commit() 
-   print(driverstandingsCount, 'driver standings have been added!')
+   # define table columns.
+   columns = ['driverStandingsId', 'raceId', 'driverId', 'points', 'position', 'positionText', 'wins']
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(driverstandings, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='driverstandings', con=engine, if_exists='append', index=False)
 
    print('Importing pit stops ...')
-   # set counter.
-   pitstopsCount = 0
    from data import pitstops
-   # sample: [841,153,1,1,'17:05:23','26.898',26898]
-   for ps in pitstops:
-      pitstop = PitStop()
-      pitstop.raceId = ps[0]
-      pitstop.driverId = ps[1]
-      pitstop.stop = ps[2]
-      pitstop.lap = ps[3]
-      pitstop.time = ps[4]
-      pitstop.duration = ps[5]
-      pitstop.milliseconds = ps[6]
-      db.session.add(pitstop)
-      pitstopsCount += 1    
-   db.session.commit() 
-   print(pitstopsCount, 'pit stops have been added!')
+   # define table columns.
+   columns = ['raceId', 'driverId', 'stop', 'lap', 'time', 'duration', 'milliseconds']
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(pitstops, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='pitstops', con=engine, if_exists='append', index=False)
 
    print('Importing qualifying ...')
-   # set counter.
-   qualifyingCount = 0
    from data import qualifying
-   # sample: [1,18,1,1,22,1,'1:26.572','1:25.187','1:26.714']
-   for q in qualifying:
-      quali = Qualifying()
-      quali.qualifyId = q[0]
-      quali.raceId = q[1]
-      quali.driverId = q[2]
-      quali.constructorId = q[3]
-      quali.number = q[4]
-      quali.position = q[5]
-      quali.q1 = q[6]
-      quali.q2 = q[7]
-      quali.q3 = q[8]
-      db.session.add(quali)
-      qualifyingCount += 1    
-   db.session.commit() 
-   print(qualifyingCount, 'qualifying sessions have been added!')
+   # define table columns.
+   columns = ['qualifyId', 'raceId', 'driverId', 'constructorId', 'number', 'position', 'q1', 'q2', 'q3']
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(qualifying, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='qualifying', con=engine, if_exists='append', index=False)
 
-   print('Importing results 01 ...')
-   # set counter.
-   results01Count = 0
-   from data import results01
-   # sample: [1,18,1,1,22,1,1,'1',1,10,58,'1:34:50.616',5690616,39,2,'1:27.452','218.300',1]
-   for r in results01:
-      result = Result()
-      result.resultId = r[0]
-      result.raceId = r[1]
-      result.driverId = r[2]
-      result.constructorId = r[3]
-      result.number = r[4]
-      result.grid = r[5]
-      result.position = r[6]
-      result.positionText = r[7]
-      result.positionOrder = r[8]
-      result.points = r[9]
-      result.laps = r[10]
-      result.time = r[11]
-      result.milliseconds = r[12]
-      result.fastestLap = r[13]
-      result.rank = r[14]
-      result.fastestLapTime = r[15]
-      result.fastestLapSpeed = r[16]
-      result.statusId = r[17]
-      db.session.add(result)
-      results01Count += 1    
-   db.session.commit() 
-   print(results01Count, 'results 01 have been added!')
+   print('Importing race results ...')
+   from data import results01, results02
+   # define table columns.
+   columns = ['resultId', 'raceId', 'driverId', 'constructorId', 'number', 'grid', 'position', 'positionText', 'positionOrder', 'points', 'laps', 'time', 'milliseconds', 'fastestLap', 'rank', 'fastestLapTime', 'fastestLapSpeed','statusId']
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(results01, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='results', con=engine, if_exists='append', index=False)   
 
-   print('Importing results 02 ...')
-   # set counter.
-   results02Count = 0
-   from data import results02
-   # sample: [1,18,1,1,22,1,1,'1',1,10,58,'1:34:50.616',5690616,39,2,'1:27.452','218.300',1]
-   for r in results02:
-      result = Result()
-      result.resultId = r[0]
-      result.raceId = r[1]
-      result.driverId = r[2]
-      result.constructorId = r[3]
-      result.number = r[4]
-      result.grid = r[5]
-      result.position = r[6]
-      result.positionText = r[7]
-      result.positionOrder = r[8]
-      result.points = r[9]
-      result.laps = r[10]
-      result.time = r[11]
-      result.milliseconds = r[12]
-      result.fastestLap = r[13]
-      result.rank = r[14]
-      result.fastestLapTime = r[15]
-      result.fastestLapSpeed = r[16]
-      result.statusId = r[17]
-      db.session.add(result)
-      results02Count += 1    
-   db.session.commit() 
-   print(results02Count, 'results 02 have been added!')
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(results02, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='results', con=engine, if_exists='append', index=False)  
 
    print('Importing sprint results ...')
-   # set counter.
-   sprintresultsCount = 0
    from data import sprintresults
-   # sample: [1,1061,830,9,33,2,1,'1',1,3,17,'25:38.426',1538426,14,'1:30.013',1]
-   for sr in sprintresults:
-      sprintresult = SprintResult()
-      sprintresult.sprintResultId = sr[0]
-      sprintresult.raceId = sr[1]
-      sprintresult.driverId = sr[2]
-      sprintresult.constructorId = sr[3]
-      sprintresult.number = sr[4]
-      sprintresult.grid = sr[5]
-      sprintresult.position = sr[6]
-      sprintresult.positionText = sr[7]
-      sprintresult.positionOrder = sr[8]
-      sprintresult.points = sr[9]
-      sprintresult.laps = sr[10]
-      sprintresult.time = sr[11]
-      sprintresult.milliseconds = sr[12]
-      sprintresult.fastestLap = sr[13]
-      sprintresult.fastestLapTime = sr[14]
-      sprintresult.statusId = sr[15]
-      db.session.add(sprintresult)
-      sprintresultsCount += 1    
-   db.session.commit() 
-   print(sprintresultsCount, 'sprint results have been added!')
+   # define table columns.
+   columns = ['sprintResultId', 'raceId', 'driverId', 'constructorId', 'number', 'grid', 'position', 'positionText', 'positionOrder', 'points', 'laps', 'time', 'milliseconds', 'fastestLap', 'fastestLapTime', 'statusId']
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(sprintresults, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='sprintresults', con=engine, if_exists='append', index=False)
 
    print('Importing lap times ...')
-   # set counter.
-   laptimes01Count = 0
-   from data import laptimes01
-   # sample: [841,20,1,1,'1:38.109',98109]
-   for lt in laptimes01:
-      laptime = LapTime()
-      laptime.raceId = lt[0]
-      laptime.driverId = lt[1]
-      laptime.lap = lt[2]
-      laptime.position = lt[3]
-      laptime.time = lt[4]
-      laptime.milliseconds = lt[5]
-      db.session.add(laptime)
-      laptimes01Count += 1    
-   db.session.commit() 
-   print(laptimes01Count, 'lap times stops have been added!')
+   from data import laptimes01, laptimes02, laptimes03, laptimes04, laptimes05, laptimes06, laptimes07, laptimes08, laptimes09, laptimes10, laptimes11, laptimes12, laptimes13, laptimes14, laptimes15, laptimes16, laptimes17
+   # define table columns.
+   columns = ['raceId', 'driverId', 'lap', 'position', 'time', 'milliseconds']
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(laptimes01, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
 
-   # set counter.
-   laptimes02Count = 0
-   from data import laptimes02
-   # sample: [841,20,1,1,'1:38.109',98109]
-   for lt in laptimes02:
-      laptime = LapTime()
-      laptime.raceId = lt[0]
-      laptime.driverId = lt[1]
-      laptime.lap = lt[2]
-      laptime.position = lt[3]
-      laptime.time = lt[4]
-      laptime.milliseconds = lt[5]
-      db.session.add(laptime)
-      laptimes02Count += 1    
-   db.session.commit() 
-   print(laptimes02Count, 'lap times stops have been added!')
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(laptimes02, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
 
-   # set counter.
-   laptimes03Count = 0
-   from data import laptimes03
-   # sample: [841,20,1,1,'1:38.109',98109]
-   for lt in laptimes03:
-      laptime = LapTime()
-      laptime.raceId = lt[0]
-      laptime.driverId = lt[1]
-      laptime.lap = lt[2]
-      laptime.position = lt[3]
-      laptime.time = lt[4]
-      laptime.milliseconds = lt[5]
-      db.session.add(laptime)
-      laptimes03Count += 1    
-   db.session.commit() 
-   print(laptimes03Count, 'lap times stops have been added!')
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(laptimes03, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
 
-   # set counter.
-   laptimes04Count = 0
-   from data import laptimes04
-   # sample: [841,20,1,1,'1:38.109',98109]
-   for lt in laptimes04:
-      laptime = LapTime()
-      laptime.raceId = lt[0]
-      laptime.driverId = lt[1]
-      laptime.lap = lt[2]
-      laptime.position = lt[3]
-      laptime.time = lt[4]
-      laptime.milliseconds = lt[5]
-      db.session.add(laptime)
-      laptimes04Count += 1    
-   db.session.commit() 
-   print(laptimes04Count, 'lap times stops have been added!')
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(laptimes04, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
 
-   # set counter.
-   laptimes05Count = 0
-   from data import laptimes05
-   # sample: [841,20,1,1,'1:38.109',98109]
-   for lt in laptimes05:
-      laptime = LapTime()
-      laptime.raceId = lt[0]
-      laptime.driverId = lt[1]
-      laptime.lap = lt[2]
-      laptime.position = lt[3]
-      laptime.time = lt[4]
-      laptime.milliseconds = lt[5]
-      db.session.add(laptime)
-      laptimes05Count += 1    
-   db.session.commit() 
-   print(laptimes05Count, 'lap times stops have been added!')
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(laptimes05, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
 
-   # set counter.
-   laptimes06Count = 0
-   from data import laptimes06
-   # sample: [841,20,1,1,'1:38.109',98109]
-   for lt in laptimes06:
-      laptime = LapTime()
-      laptime.raceId = lt[0]
-      laptime.driverId = lt[1]
-      laptime.lap = lt[2]
-      laptime.position = lt[3]
-      laptime.time = lt[4]
-      laptime.milliseconds = lt[5]
-      db.session.add(laptime)
-      laptimes06Count += 1    
-   db.session.commit() 
-   print(laptimes06Count, 'lap times stops have been added!')
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(laptimes06, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
 
-   # set counter.
-   laptimes07Count = 0
-   from data import laptimes07
-   # sample: [841,20,1,1,'1:38.109',98109]
-   for lt in laptimes07:
-      laptime = LapTime()
-      laptime.raceId = lt[0]
-      laptime.driverId = lt[1]
-      laptime.lap = lt[2]
-      laptime.position = lt[3]
-      laptime.time = lt[4]
-      laptime.milliseconds = lt[5]
-      db.session.add(laptime)
-      laptimes07Count += 1    
-   db.session.commit() 
-   print(laptimes07Count, 'lap times stops have been added!')
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(laptimes07, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
 
-   # set counter.
-   laptimes08Count = 0
-   from data import laptimes08
-   # sample: [841,20,1,1,'1:38.109',98109]
-   for lt in laptimes08:
-      laptime = LapTime()
-      laptime.raceId = lt[0]
-      laptime.driverId = lt[1]
-      laptime.lap = lt[2]
-      laptime.position = lt[3]
-      laptime.time = lt[4]
-      laptime.milliseconds = lt[5]
-      db.session.add(laptime)
-      laptimes08Count += 1    
-   db.session.commit() 
-   print(laptimes08Count, 'lap times stops have been added!')
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(laptimes08, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
 
-   # set counter.
-   laptimes09Count = 0
-   from data import laptimes09
-   # sample: [841,20,1,1,'1:38.109',98109]
-   for lt in laptimes09:
-      laptime = LapTime()
-      laptime.raceId = lt[0]
-      laptime.driverId = lt[1]
-      laptime.lap = lt[2]
-      laptime.position = lt[3]
-      laptime.time = lt[4]
-      laptime.milliseconds = lt[5]
-      db.session.add(laptime)
-      laptimes09Count += 1    
-   db.session.commit() 
-   print(laptimes09Count, 'lap times stops have been added!')
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(laptimes09, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
 
-   # set counter.
-   laptimes10Count = 0
-   from data import laptimes10
-   # sample: [841,20,1,1,'1:38.109',98109]
-   for lt in laptimes10:
-      laptime = LapTime()
-      laptime.raceId = lt[0]
-      laptime.driverId = lt[1]
-      laptime.lap = lt[2]
-      laptime.position = lt[3]
-      laptime.time = lt[4]
-      laptime.milliseconds = lt[5]
-      db.session.add(laptime)
-      laptimes10Count += 1    
-   db.session.commit() 
-   print(laptimes10Count, 'lap times stops have been added!')
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(laptimes10, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
 
-   # set counter.
-   laptimes11Count = 0
-   from data import laptimes11
-   # sample: [841,20,1,1,'1:38.109',98109]
-   for lt in laptimes11:
-      laptime = LapTime()
-      laptime.raceId = lt[0]
-      laptime.driverId = lt[1]
-      laptime.lap = lt[2]
-      laptime.position = lt[3]
-      laptime.time = lt[4]
-      laptime.milliseconds = lt[5]
-      db.session.add(laptime)
-      laptimes11Count += 1    
-   db.session.commit() 
-   print(laptimes11Count, 'lap times stops have been added!')
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(laptimes11, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
 
-   # set counter.
-   laptimes12Count = 0
-   from data import laptimes12
-   # sample: [841,20,1,1,'1:38.109',98109]
-   for lt in laptimes12:
-      laptime = LapTime()
-      laptime.raceId = lt[0]
-      laptime.driverId = lt[1]
-      laptime.lap = lt[2]
-      laptime.position = lt[3]
-      laptime.time = lt[4]
-      laptime.milliseconds = lt[5]
-      db.session.add(laptime)
-      laptimes12Count += 1    
-   db.session.commit() 
-   print(laptimes12Count, 'lap times stops have been added!')
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(laptimes12, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
 
-   # set counter.
-   laptimes13Count = 0
-   from data import laptimes13
-   # sample: [841,20,1,1,'1:38.109',98109]
-   for lt in laptimes13:
-      laptime = LapTime()
-      laptime.raceId = lt[0]
-      laptime.driverId = lt[1]
-      laptime.lap = lt[2]
-      laptime.position = lt[3]
-      laptime.time = lt[4]
-      laptime.milliseconds = lt[5]
-      db.session.add(laptime)
-      laptimes13Count += 1    
-   db.session.commit() 
-   print(laptimes13Count, 'lap times stops have been added!')
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(laptimes13, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
 
-   # set counter.
-   laptimes14Count = 0
-   from data import laptimes14
-   # sample: [841,20,1,1,'1:38.109',98109]
-   for lt in laptimes14:
-      laptime = LapTime()
-      laptime.raceId = lt[0]
-      laptime.driverId = lt[1]
-      laptime.lap = lt[2]
-      laptime.position = lt[3]
-      laptime.time = lt[4]
-      laptime.milliseconds = lt[5]
-      db.session.add(laptime)
-      laptimes14Count += 1    
-   db.session.commit() 
-   print(laptimes14Count, 'lap times stops have been added!')
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(laptimes14, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
 
-   # set counter.
-   laptimes15Count = 0
-   from data import laptimes15
-   # sample: [841,20,1,1,'1:38.109',98109]
-   for lt in laptimes15:
-      laptime = LapTime()
-      laptime.raceId = lt[0]
-      laptime.driverId = lt[1]
-      laptime.lap = lt[2]
-      laptime.position = lt[3]
-      laptime.time = lt[4]
-      laptime.milliseconds = lt[5]
-      db.session.add(laptime)
-      laptimes15Count += 1    
-   db.session.commit() 
-   print(laptimes15Count, 'lap times stops have been added!')
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(laptimes15, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
 
-   # set counter.
-   laptimes16Count = 0
-   from data import laptimes16
-   # sample: [841,20,1,1,'1:38.109',98109]
-   for lt in laptimes16:
-      laptime = LapTime()
-      laptime.raceId = lt[0]
-      laptime.driverId = lt[1]
-      laptime.lap = lt[2]
-      laptime.position = lt[3]
-      laptime.time = lt[4]
-      laptime.milliseconds = lt[5]
-      db.session.add(laptime)
-      laptimes16Count += 1    
-   db.session.commit() 
-   print(laptimes16Count, 'lap times stops have been added!')
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(laptimes16, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
 
-   # set counter.
-   laptimes17Count = 0
-   from data import laptimes17
-   # sample: [841,20,1,1,'1:38.109',98109]
-   for lt in laptimes17:
-      laptime = LapTime()
-      laptime.raceId = lt[0]
-      laptime.driverId = lt[1]
-      laptime.lap = lt[2]
-      laptime.position = lt[3]
-      laptime.time = lt[4]
-      laptime.milliseconds = lt[5]
-      db.session.add(laptime)
-      laptimes17Count += 1    
-   db.session.commit() 
-   print(laptimes17Count, 'lap times stops have been added!')
+   # create the pandas dataframe with column name is provided explicitly
+   df = pd.DataFrame(laptimes17, columns=columns)   
+   # insert dataframe into database.
+   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)   
 
-   # add track status
-   # sample: ‘1’: track clear, ‘2’: yellow flag, ‘3’: unused, ‘4’: safety car, ‘5’: red flag, ‘6’: vsc, ‘7’: vsc ending
-   ts01 = TrackStatus()
-   ts01.statusId = 1
-   ts01.status = 'Track Clear'
-   db.session.add(ts01)
-   ts02 = TrackStatus()
-   ts02.statusId = 2
-   ts02.status = 'Yellow Flag'
-   db.session.add(ts02)
-   ts03 = TrackStatus()
-   ts03.statusId = 3
-   ts03.status = 'Unused'
-   db.session.add(ts03)
-   ts04 = TrackStatus()
-   ts04.statusId = 4
-   ts04.status = 'Safety Car'
-   db.session.add(ts04)
-   ts05 = TrackStatus()
-   ts05.statusId = 5
-   ts05.status = 'Red Flag'
-   db.session.add(ts05)
-   ts06 = TrackStatus()
-   ts06.statusId = 6
-   ts06.status = 'Virtual Safety Car'
-   db.session.add(ts06)
-   ts07 = TrackStatus()
-   ts07.statusId = 7
-   ts07.status = 'Virtual Safety Car Ending'
-   db.session.add(ts07)
-   db.session.commit() 
+   # initialize data of lists.
+   trackstatus = {'statusId': [1, 2, 3, 4, 5, 6, 7],
+        'status': ['Track Clear', 'Yellow Flag', 'Unused', 'Safety Car', 'Red Flag', 'VSC', 'VSC Ending']}   
+   # create dataframe
+   df = pd.DataFrame(trackstatus)
+   # insert dataframe into database.
+   df.to_sql(name='trackstatus', con=engine, if_exists='append', index=False)
 
+   # close the database connection
+   engine.dispose()
    # return to home page.
-   return render_template('index.html')
+   return render_template('settings.html')
 
 # use this method to return to simulate page.
 @app.route('/simulate', methods=['POST'])

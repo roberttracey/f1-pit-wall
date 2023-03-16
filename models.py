@@ -106,11 +106,10 @@ class LapTime(db.Model):
 class Lap(db.Model):
     __tablename__ = 'laps'
     # lap times provided by fastf1
-    year = Column(Integer, ForeignKey('races.raceId', ondelete="CASCADE"), nullable=False, default=0, primary_key=True)
-    event = Column(String(50), primary_key=True)
-    session = Column(String(10), primary_key=True)
+    lapId = Column(Integer, primary_key=True, autoincrement=True)
+    raceId = Column(Integer, ForeignKey('races.raceId', ondelete="CASCADE"), nullable=False, default=0)
     time = Column(Integer)
-    driver = Column(String(3), ForeignKey('drivers.driverRef', ondelete="CASCADE"), nullable=False)
+    driver = Column(String(3))
     drivernumber = Column(String(3))
     laptime = Column(Integer)
     lapnumber = Column(Integer)
@@ -134,7 +133,7 @@ class Lap(db.Model):
     team = Column(String(255))
     lapstarttime = Column(Integer)
     lapstartdate = Column(Integer)
-    trackstatus = Column(Integer, ForeignKey('trackstatus.statusId', ondelete="CASCADE"))
+    trackstatus = Column(Integer)
     isaccurate = Column(Boolean)    
 
     def __str__(self):

@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: fc5f6fd5a398
+Revision ID: 469b617e42c6
 Revises: 
-Create Date: 2023-03-15 19:43:47.177504
+Create Date: 2023-03-16 18:07:32.241840
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'fc5f6fd5a398'
+revision = '469b617e42c6'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -63,7 +63,7 @@ def upgrade():
     )
     op.create_table('trackstatus',
     sa.Column('statusId', sa.Integer(), nullable=False),
-    sa.Column('status', sa.String(length=10), nullable=True),
+    sa.Column('status', sa.String(length=50), nullable=True),
     sa.PrimaryKeyConstraint('statusId')
     )
     op.create_table('races',
@@ -124,11 +124,10 @@ def upgrade():
     sa.PrimaryKeyConstraint('driverStandingsId')
     )
     op.create_table('laps',
-    sa.Column('year', sa.Integer(), nullable=False),
-    sa.Column('event', sa.String(length=50), nullable=False),
-    sa.Column('session', sa.String(length=10), nullable=False),
+    sa.Column('lapId', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('raceId', sa.Integer(), nullable=False),
     sa.Column('time', sa.Integer(), nullable=True),
-    sa.Column('driver', sa.String(length=3), nullable=False),
+    sa.Column('driver', sa.String(length=3), nullable=True),
     sa.Column('drivernumber', sa.String(length=3), nullable=True),
     sa.Column('laptime', sa.Integer(), nullable=True),
     sa.Column('lapnumber', sa.Integer(), nullable=True),
@@ -154,10 +153,8 @@ def upgrade():
     sa.Column('lapstartdate', sa.Integer(), nullable=True),
     sa.Column('trackstatus', sa.Integer(), nullable=True),
     sa.Column('isaccurate', sa.Boolean(), nullable=True),
-    sa.ForeignKeyConstraint(['driver'], ['drivers.driverRef'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['trackstatus'], ['trackstatus.statusId'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['year'], ['races.raceId'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('year', 'event', 'session')
+    sa.ForeignKeyConstraint(['raceId'], ['races.raceId'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('lapId')
     )
     op.create_table('laptimes',
     sa.Column('raceId', sa.Integer(), nullable=False),
