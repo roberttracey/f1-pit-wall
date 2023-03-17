@@ -1,6 +1,7 @@
 # import the required modules.
 import math
 import os
+from datetime import date
 import fastf1
 import pandas as pd
 from datetime import datetime
@@ -9,12 +10,13 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 
+# set ff1 cache location.
+fastf1.Cache.enable_cache('fastf1') 
+
 app = Flask(__name__, static_folder='static')
 
-
 # use this code to determine of we are working locally or in azure.
-# website_hostname exists only in production environment.
-if 'WEBSITE_HOSTNAME' not in os.environ:
+if 'WEBSITE_HOSTNAME' not in os.environ: # website_hostname exists only in production environment.
     # local development, where we'll use environment variables.
     print("Loading config.development and environment variables from .env file.")
     app.config.from_object('azureproject.development')
@@ -35,7 +37,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 # import must be done after db initialization due to circular import issue.
-from models import Circuit, ConstructorResult, ConstructorStanding, Race, Season, Constructor, DriverStanding, Driver, LapTime, PitStop, Qualifying, Result, SprintResult, Status, Lap, TrackStatus
+from models import Circuit, ConstructorResult, ConstructorStanding, Race, Season, Constructor, DriverStanding, Driver, PitStop, Qualifying, Result, SprintResult, Status, Lap, TrackStatus
 
 # use this method to return to home page.
 @app.route('/')
@@ -72,11 +74,11 @@ def settings():
 # use this method to return to standing page.
 @app.route('/import_laps', methods=['POST'])
 def import_laps():
-   races = Race.query.where(Race.year == 2022).all()
+   races = Race.query.where(Race.year >= 2019, Race.date <= date.today()).all()
    # get_session(2022, 'Bahrain', 'Race')
-   print('Importing laps ...')
+   # print('Importing laps ...')
    for r in races:
-      # print(r.year, r.round, 'Race')
+      # print(r.year, r.round, r.date)
       session = fastf1.get_session(r.year, r.round, 'Race')
       print('Importing:', r.year, r.name)
       # load the session
@@ -103,68 +105,56 @@ def import_laps():
          lap.sector1sessiontime = df['Sector1SessionTime'][i]
          lap.sector2sessiontime = df['Sector2SessionTime'][i]
          lap.sector3sessiontime = df['Sector3SessionTime'][i]
-
          # avoid 'nan' value as they are no allow in MySQL.
          if math.isnan (df['SpeedI1'][i]):
             lap.speedi1 = 0
          else:
             lap.speedi1 = df['SpeedI1'][i]
-
          # lap.speedi2 = df['SpeedI2'][i]
          if math.isnan (df['SpeedI2'][i]):
             lap.speedi2 = 0
          else:
             lap.speedi2 = df['SpeedI2'][i]
-
          # lap.speedfl = df['SpeedFL'][i]
          if math.isnan (df['SpeedFL'][i]):
             lap.speedfl = 0
          else:
             lap.speedfl = df['SpeedFL'][i]
-
          # lap.speedst = df['SpeedST'][i]
          if math.isnan (df['SpeedST'][i]):
             lap.speedst = 0
          else:
-            lap.speedst = df['SpeedST'][i]
-         
+            lap.speedst = df['SpeedST'][i]         
          # lap.ispersonalbest = df['IsPersonalBest'][i]
          if math.isnan (df['IsPersonalBest'][i]):
             lap.ispersonalbest = 0
          else:
-            lap.ispersonalbest = df['IsPersonalBest'][i]          
-         
+            lap.ispersonalbest = df['IsPersonalBest'][i]            
          lap.compound = df['Compound'][i]
-
          # lap.tyrelife = df['TyreLife'][i]
          if math.isnan (df['TyreLife'][i]):
             lap.tyrelife = 0
          else:
-            lap.tyrelife = df['TyreLife'][i]  
-
+            lap.tyrelife = df['TyreLife'][i] 
          # lap.freshtyre = df['FreshTyre'][i]
          if math.isnan (df['FreshTyre'][i]):
             lap.freshtyre = 0
          else:
             lap.freshtyre = df['FreshTyre'][i]  
-
          lap.team = df['Team'][i]
          lap.lapstarttime = df['LapStartTime'][i]
          lap.lapstartdate = df['LapStartDate'][i]
          lap.trackstatus = df['TrackStatus'][i]
-
          # lap.isaccurate = df['IsAccurate'][i]
          if math.isnan (df['IsAccurate'][i]):
             lap.isaccurate = 0
          else:
-            lap.isaccurate = df['IsAccurate'][i]  
-
+            lap.isaccurate = df['IsAccurate'][i]
          db.session.add(lap) 
       db.session.commit()
-
-   # print(races)
+      
    # return to home page.
-   return render_template('index.html')
+   return render_template('settings.html')
 
 # use this method to return to standing page.
 @app.route('/import_data', methods=['POST'])
@@ -294,95 +284,6 @@ def import_data():
    df = pd.DataFrame(sprintresults, columns=columns)   
    # insert dataframe into database.
    df.to_sql(name='sprintresults', con=engine, if_exists='append', index=False)
-
-   print('Importing lap times ...')
-   from data import laptimes01, laptimes02, laptimes03, laptimes04, laptimes05, laptimes06, laptimes07, laptimes08, laptimes09, laptimes10, laptimes11, laptimes12, laptimes13, laptimes14, laptimes15, laptimes16, laptimes17
-   # define table columns.
-   columns = ['raceId', 'driverId', 'lap', 'position', 'time', 'milliseconds']
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(laptimes01, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
-
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(laptimes02, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
-
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(laptimes03, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
-
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(laptimes04, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
-
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(laptimes05, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
-
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(laptimes06, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
-
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(laptimes07, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
-
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(laptimes08, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
-
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(laptimes09, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
-
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(laptimes10, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
-
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(laptimes11, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
-
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(laptimes12, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
-
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(laptimes13, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
-
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(laptimes14, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
-
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(laptimes15, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
-
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(laptimes16, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)
-
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(laptimes17, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='laptimes', con=engine, if_exists='append', index=False)   
 
    # initialize data of lists.
    trackstatus = {'statusId': [1, 2, 3, 4, 5, 6, 7],

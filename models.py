@@ -91,37 +91,25 @@ class Driver(db.Model):
         return self.code
     
     
-class LapTime(db.Model):
-    __tablename__ = 'laptimes'
-    raceId = Column(Integer, ForeignKey('races.raceId', ondelete="CASCADE"), nullable=False, default=0, primary_key=True)
-    driverId = Column(Integer, ForeignKey('drivers.driverId', ondelete="CASCADE"), nullable=False, primary_key=True)
-    lap = Column(Integer, nullable=False, primary_key=True)
-    position = Column(Integer)
-    time = Column(String(255))
-    milliseconds = Column(Integer)    
-
-    def __str__(self):
-        return self.raceId
-    
 class Lap(db.Model):
     __tablename__ = 'laps'
     # lap times provided by fastf1
     lapId = Column(Integer, primary_key=True, autoincrement=True)
     raceId = Column(Integer, ForeignKey('races.raceId', ondelete="CASCADE"), nullable=False, default=0)
-    time = Column(Integer)
+    time = Column(String(22))
     driver = Column(String(3))
     drivernumber = Column(String(3))
-    laptime = Column(Integer)
+    laptime = Column(String(22))
     lapnumber = Column(Integer)
     stint = Column(Integer)
-    pitouttime = Column(Integer)
-    pitintime = Column(Integer)
-    sector1time = Column(Integer)
-    sector2time = Column(Integer)
-    sector3time = Column(Integer)
-    sector1sessiontime = Column(Integer)
-    sector2sessiontime = Column(Integer)
-    sector3sessiontime  = Column(Integer)
+    pitouttime = Column(String(22))
+    pitintime = Column(String(22))
+    sector1time = Column(String(22))
+    sector2time = Column(String(22))
+    sector3time = Column(String(22))
+    sector1sessiontime = Column(String(22))
+    sector2sessiontime = Column(String(22))
+    sector3sessiontime  = Column(String(22))
     speedi1  = Column(Float)
     speedi2  = Column(Float)
     speedfl  = Column(Float)
@@ -131,8 +119,8 @@ class Lap(db.Model):
     tyrelife  = Column(Float)
     freshtyre = Column(Boolean)
     team = Column(String(255))
-    lapstarttime = Column(Integer)
-    lapstartdate = Column(Integer)
+    lapstarttime = Column(String(22))
+    lapstartdate = Column(String(22))
     trackstatus = Column(Integer)
     isaccurate = Column(Boolean)    
 
