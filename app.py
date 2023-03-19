@@ -10,6 +10,14 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 
+# check if ff1 cache folder exists.
+ff1_cache = 'fastf1'
+if os.path.exists(ff1_cache) == False:
+   # if not, make it.
+   os.mkdir(ff1_cache)
+else:
+   print('Cache folder found!')
+
 # set ff1 cache location.
 fastf1.Cache.enable_cache('fastf1') 
 
