@@ -9,6 +9,7 @@ from flask import Flask, redirect, render_template, request, send_from_directory
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
+from flask_wtf.csrf import CSRFProtect
 
 # check if ff1 cache folder exists.
 ff1_cache = 'fastf1'
@@ -17,11 +18,11 @@ if os.path.exists(ff1_cache) == False:
    os.mkdir(ff1_cache)
 else:
    print('Cache folder found!')
-
 # set ff1 cache location.
-fastf1.Cache.enable_cache('fastf1') 
+fastf1.Cache.enable_cache(ff1_cache) 
 
 app = Flask(__name__, static_folder='static')
+csrf = CSRFProtect(app)
 
 # use this code to determine of we are working locally or in azure.
 if 'WEBSITE_HOSTNAME' not in os.environ: # website_hostname exists only in production environment.
@@ -49,6 +50,7 @@ from models import Circuit, ConstructorResult, ConstructorStanding, Race, Season
 
 # use this method to return to home page.
 @app.route('/')
+@csrf.exempt
 def index():
    print('Request for index page received')
    return render_template('index.html')
@@ -61,26 +63,40 @@ def favicon():
 
 
 # use this method to go to schedule page.
-@app.route('/schedule', methods=['POST'])
-def schedule():
-   print('Navigate to schedule.html')
-   return render_template('schedule.html')
+@app.route('/races', methods=['POST'])
+@csrf.exempt
+def races():
+   # get races from db
+   races = Race.query.where(Race.year == 2023).all()
+   print('Navigate to races.html')
+   return render_template('races.html', races=races)
+
+@app.route('/races/<int:year>', methods=['GET', 'POST'])
+@csrf.exempt
+def get_races(year):
+   # get races from db
+   races = Race.query.where(Race.year == year).all()
+   print('Update races for year', year)
+   return render_template('races.html', races=races)
 
 
 # use this method to return to standing page.
 @app.route('/standing', methods=['POST'])
+@csrf.exempt
 def standing():
    print('Navigate to standing.html')
    return render_template('standing.html')
 
 # use this method to return to standing page.
 @app.route('/settings', methods=['POST'])
+@csrf.exempt
 def settings():
    print('Navigate to settings.html')
    return render_template('settings.html')
 
 # use this method to return to standing page.
 @app.route('/import_laps', methods=['POST'])
+@csrf.exempt
 def import_laps():
    races = Race.query.where(Race.year >= 2019, Race.date <= date.today()).all()
    # get_session(2022, 'Bahrain', 'Race')
@@ -166,6 +182,7 @@ def import_laps():
 
 # use this method to return to standing page.
 @app.route('/import_data', methods=['POST'])
+@csrf.exempt
 def import_data():
    # create engine.
    engine = create_engine(app.config.get('DATABASE_URI'))
@@ -307,7 +324,8 @@ def import_data():
    return render_template('settings.html')
 
 # use this method to return to simulate page.
-@app.route('/simulate', methods=['POST'])
+@app.route('/simulate', methods=['GET', 'POST'])
+@csrf.exempt
 def simulate(): 
    print('Navigate to simulate.html')
    return render_template('simulate.html')

@@ -9,3 +9,4 @@ mysqlclient
 mysql
 fastf1
 pandas
+flask_wtf
