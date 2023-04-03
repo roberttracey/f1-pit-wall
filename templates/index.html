@@ -31,7 +31,7 @@
     <!-- ======= Start Header ======= -->
     <header id="header" class="header fixed-top d-flex align-items-center">
       <div class="d-flex align-items-center justify-content-between">
-        <a href="index.html" class="logo d-flex align-items-center">
+        <a href="{{ url_for('index') }}" class="logo d-flex align-items-center">
           <img src="{{ url_for('static', filename='assets/img/f1-logo-01.png') }}" alt="">
           <span class="d-none d-lg-block">Pit Wall</span>
         </a>
@@ -43,14 +43,71 @@
     <!-- ======= Start Sidebar ======= -->
     <aside id="sidebar" class="sidebar">
       <ul class="sidebar-nav" id="sidebar-nav">
-        <!-- Start Dashboard Nav -->
+
+        <!-- Start Home Nav -->
         <li class="nav-item">
-          <a class="nav-link collapsed" href="index.html">
-            <i class="bi bi-grid"></i>
-            <span>Dashboard</span>
+          <a class="nav-link collapsed" href="{{url_for('index')}}">
+            <i class="bi bi-house-door"></i>
+            <span>Home</span>
           </a>
         </li>
-        <!-- End Dashboard Nav -->
+        <!-- End Home Nav -->
+
+        <!-- Start Races Nav -->
+        <li class="nav-item">
+          <a class="nav-link collapsed" href="{{url_for('races')}}">
+            <i class="bi bi-flag"></i>
+            <span>Races</span>
+          </a>
+        </li>
+        <!-- End Races Nav -->
+
+        <!-- Start Drivers Nav -->
+        <li class="nav-item">
+          <a class="nav-link collapsed" href="{{url_for('drivers')}}">
+            <i class='bi bi-person'></i>
+            <span>Drivers</span>
+          </a>
+        </li>
+        <!-- End Drivers Nav -->
+
+        <!-- Start Teams Nav -->
+        <li class="nav-item">
+          <a class="nav-link collapsed" href="{{url_for('teams')}}">
+            <i class="bi bi-people"></i>
+            <span>Teams</span>
+          </a>
+        </li>
+        <!-- End Teams Nav -->
+
+        <!-- Start Standings Nav -->
+        <li class="nav-item">
+          <a class="nav-link collapsed" href="{{url_for('standing')}}">
+            <i class="bi bi-layout-text-window-reverse"></i>
+            <span>Standings</span>
+          </a>
+        </li>
+        <!-- End Standings Nav -->
+
+        <!-- Start Settings Nav -->
+        <li class="nav-item">
+          <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
+            <i class='bi bi-gear' ></i></i><span>Settings</span><i class="bi bi-chevron-down ms-auto"></i>
+          </a>
+          <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">        
+            <li>
+              <a href="components-breadcrumbs.html">
+                <i class="bi bi-circle"></i><span>Import Races</span>
+              </a>
+            </li>
+            <li>
+              <a href="components-buttons.html">
+                <i class="bi bi-circle"></i><span>Import Laps</span>
+              </a>
+            </ul>
+        </li>
+        <!-- End Settings Nav -->
+
       </ul>
     </aside>
     <!-- ======= End Sidebar ======= -->
@@ -62,8 +119,74 @@
         <h1>Home</h1>
       </div>
       <!-- End Page Title -->
+
+      <!-- Start Page Content -->
+      <section class="section contact">
+        <div class="row gy-8">  
+          <div class="col-xl-8">  
+            <div class="row">              
+              
+              <div class="col-lg-6">   
+                <a href="{{ url_for('races') }}">             
+                  <div class="info-box card">
+                    <i class="bi bi-flag"></i>
+                    <h3>Races</h3>
+                  </div>
+                </a>
+              </div>            
+              
+              <div class="col-lg-6">
+                <a href="{{ url_for('drivers') }}"> 
+                  <div class="info-box card">
+                    <i class='bi bi-person'></i>
+                    <h3>Drivers</h3>
+                  </div>
+                </a>
+              </div>
+
+
+              <div class="col-lg-6">
+                <a href="{{ url_for('standing') }}"> 
+                  <div class="info-box card">
+                    <i class="bi bi-layout-text-window-reverse"></i>
+                    <h3>Standings</h3>
+                  </div>
+                </a>
+              </div>
+
+
+              <div class="col-lg-6">
+                <a href="{{ url_for('teams') }}"> 
+                  <div class="info-box card">
+                    <i class='bi bi-people' ></i>
+                    <h3>Teams</h3>
+                  </div>
+                </a>
+              </div>
+
+            </div>  
+          </div> 
+        </div>
+        <!-- End Page Content -->
+  
+      </section>
     </main>
     <!-- ======= End Main ======= -->
+
+    <!-- ======= Start Footer ======= -->
+    <footer id="footer" class="footer">
+      <div class="copyright">
+        &copy; Copyright <strong><span>F1 Pit Wall</span></strong>. All Rights Reserved
+      </div>
+      <div class="credits">
+        <!-- All the links in the footer should remain intact. -->
+        <!-- You can delete the links only if you purchased the pro version. -->
+        <!-- Licensing information: https://bootstrapmade.com/license/ -->
+        <!-- Purchase the pro version with working PHP/AJAX contact form: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/ -->
+        Designed by <a href="https://www.linkedin.com/in/robert-tracey-38725410b/" target="_blank">Robert Tracey</a>
+      </div>
+    </footer>
+    <!-- ======= End Footer ======= -->
 
     <a href="#" class="back-to-top d-flex align-items-center justify-content-center">
       <i class="bi bi-arrow-up-short"></i>

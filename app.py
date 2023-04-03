@@ -62,14 +62,41 @@ def favicon():
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 
-# use this method to go to schedule page.
-@app.route('/races', methods=['POST'])
+# use this method to go to races page.
+@app.route('/races', methods=['GET', 'POST'])
 @csrf.exempt
 def races():
    # get races from db
-   races = Race.query.where(Race.year == 2023).all()
+   # races = Race.query.where(Race.year == 2023).all()
+   races = Race.query.where(Race.year >= 2019).all()
    print('Navigate to races.html')
    return render_template('races.html', races=races)
+
+@app.route('/simulate/<int:race_id>', methods=['GET', 'POST'])
+@csrf.exempt
+def simulate(race_id):
+   # get laps from db
+   laps = Lap.query.where(Lap.raceId == race_id).all()
+   print('Starting simulation', race_id)
+   return render_template('simulate.html', laps=laps)
+
+# use this method to go to drivers page.
+@app.route('/drivers', methods=['GET', 'POST'])
+@csrf.exempt
+def drivers():
+   # get drivers from db
+   drivers = Driver.query.where().all()
+   print('Navigate to drivers.html')
+   return render_template('drivers.html', drivers=drivers)
+
+# use this method to go to drivers page.
+@app.route('/teams', methods=['GET', 'POST'])
+@csrf.exempt
+def teams():
+   # get teams from db
+   teams = Constructor.query.where().all()
+   print('Navigate to teams.html')
+   return render_template('teams.html', teams=teams)
 
 @app.route('/races/<int:year>', methods=['GET', 'POST'])
 @csrf.exempt
@@ -81,14 +108,14 @@ def get_races(year):
 
 
 # use this method to return to standing page.
-@app.route('/standing', methods=['POST'])
+@app.route('/standing', methods=['GET', 'POST'])
 @csrf.exempt
 def standing():
    print('Navigate to standing.html')
    return render_template('standing.html')
 
 # use this method to return to standing page.
-@app.route('/settings', methods=['POST'])
+@app.route('/settings', methods=['GET', 'POST'])
 @csrf.exempt
 def settings():
    print('Navigate to settings.html')
@@ -322,13 +349,6 @@ def import_data():
    engine.dispose()
    # return to home page.
    return render_template('settings.html')
-
-# use this method to return to simulate page.
-@app.route('/simulate', methods=['GET', 'POST'])
-@csrf.exempt
-def simulate(): 
-   print('Navigate to simulate.html')
-   return render_template('simulate.html')
 
 
 if __name__ == '__main__':

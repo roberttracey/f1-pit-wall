@@ -116,11 +116,11 @@
     <main id="main" class="main">
       <!-- Start Page Title -->
       <div class="pagetitle">
-        <h1>Races</h1>
+        <h1>Drivers</h1>
         <nav>
           <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
-            <li class="breadcrumb-item active">Races</li>
+            <li class="breadcrumb-item active">Drivers</li>
           </ol>
         </nav>
       </div>
@@ -132,33 +132,35 @@
   
             <div class="card">
               <div class="card-body">
-                <h5 class="card-title">All Races</h5>
+                <h5 class="card-title">All Drivers</h5>
   
                 <!-- Table with stripped rows -->
-                {% if races %}
+                {% if drivers %}
                 <table class="table datatable">
                   <thead>
                     <tr>
                       <th scope="col">#</th>
-                      <th scope="col">Year</th>
-                      <th scope="col">Name</th>
-                      <th scope="col">Date</th>
+                      <th scope="col">Code</th>
+                      <th scope="col">First Name</th>
+                      <th scope="col">Last Name</th>
+                      <th scope="col">Nationality</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {% for race in races %}
+                    {% for driver in drivers %}
                     <tr>
-                      <th scope="row">{{ race.round }}</th>
-                      <td>{{ race.year }}</td>
-                      <td><a href="{{ url_for('simulate', race_id=race.raceId) }}">{{ race.name }}</a></td>
-                      <td>{{ race.date }}</td>
+                      <th scope="row">{{ driver.driverId }}</th>
+                      <td>{{ driver.code }}</td>
+                      <td>{{ driver.forename }}</td>
+                      <td>{{ driver.surname }}</td>
+                      <td>{{ driver.nationality }}</td>
                     </tr>
                     {% endfor %}
                   </tbody>
                 </table>
                 <!-- End Table with stripped rows -->
                 {% else %}                
-                <p>No races of year yet.</p>
+                <p>No drivers found!</p>
                 {% endif %}  
               </div>
             </div>  
