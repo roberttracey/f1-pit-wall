@@ -127,6 +127,14 @@ class Lap(db.Model):
     def __str__(self):
         return self.year
     
+    def as_dict(self):
+        return {
+            'lapnumber': self.lapnumber,
+            'driver': self.driver,
+            'team': self.team,
+            'compound': self.compound
+        }
+    
 class TrackStatus(db.Model):
     # sample: ‘1’: track clear, ‘2’: yellow flag, ‘3’: unused, ‘4’: safety car, ‘5’: red flag, ‘6’: vsc, ‘7’: vsc ending
     __tablename__ = 'trackstatus'

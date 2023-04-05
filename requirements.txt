@@ -10,3 +10,6 @@ mysql
 fastf1
 pandas
 flask_wtf
+numpy
+jinja2
+markupsafe

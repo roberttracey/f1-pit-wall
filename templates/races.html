@@ -140,18 +140,18 @@
                   <thead>
                     <tr>
                       <th scope="col">#</th>
-                      <th scope="col">Year</th>
-                      <th scope="col">Name</th>
                       <th scope="col">Date</th>
+                      <th scope="col">Year</th>
+                      <th scope="col">Name</th>                      
                     </tr>
                   </thead>
                   <tbody>
                     {% for race in races %}
                     <tr>
                       <th scope="row">{{ race.round }}</th>
+                      <td>{{ race.date.strftime('%a, %B %d') }}</td>
                       <td>{{ race.year }}</td>
-                      <td><a href="{{ url_for('simulate', race_id=race.raceId) }}">{{ race.name }}</a></td>
-                      <td>{{ race.date }}</td>
+                      <td><a href="{{ url_for('simulate', race_id=race.raceId) }}">{{ race.name }}</a></td>                      
                     </tr>
                     {% endfor %}
                   </tbody>

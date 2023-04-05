@@ -1,15 +1,63 @@
 # import the required modules.
 import math
 import os
+from random import randrange
+import numpy as np
 from datetime import date
+from datetime import datetime, timedelta
+from markupsafe import Markup
+import jinja2
+from jinja2 import Environment
 import fastf1
 import pandas as pd
 from datetime import datetime
-from flask import Flask, redirect, render_template, request, send_from_directory, url_for
+from flask import Flask, redirect, render_template, request, send_from_directory, url_for, jsonify
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from flask_wtf.csrf import CSRFProtect
+
+
+class Race:
+    def __init__(self, lap, raceId, time):
+        self._lap = lap
+        self._raceId = raceId
+        self._time = time
+
+    # Getters
+    @property
+    def lap(self):
+        return self._lap
+
+    @property
+    def raceId(self):
+        return self._raceId
+
+    @property
+    def time(self):
+        return self._time
+
+    # Setters
+    @lap.setter
+    def lap(self, value):
+        self._lap = value
+
+    @raceId.setter
+    def raceId(self, value):
+        self._raceId = value
+
+    @time.setter
+    def time(self, value):
+        self._time = value
+
+    # Increment Methods
+    def incrementLap(self):
+        self._lap += 1
+
+    def incrementTime(self, increment):
+        self._time += increment
+
+simulation = Race(0, 0, '')
 
 # check if ff1 cache folder exists.
 ff1_cache = 'fastf1'
@@ -48,6 +96,19 @@ migrate = Migrate(app, db)
 # import must be done after db initialization due to circular import issue.
 from models import Circuit, ConstructorResult, ConstructorStanding, Race, Season, Constructor, DriverStanding, Driver, PitStop, Qualifying, Result, SprintResult, Status, Lap, TrackStatus
 
+# use this custoim filter to display timedelta. 
+def format_timedelta(value):  
+    # convert string value to timedelta. 
+    td = pd.to_timedelta(value)
+    # calculate huour, minute, seeond and milliseconds.
+    hours, remainder = divmod(td.total_seconds(), 3600)
+    minutes, seconds = divmod(remainder, 60)
+    milliseconds = td.microseconds // 1000
+    return '{:02}:{:02}.{:03}'.format(int(minutes), int(seconds), milliseconds)
+
+# add custom filter to app. 
+app.jinja_env.filters['format_timedelta'] = format_timedelta
+
 # use this method to return to home page.
 @app.route('/')
 @csrf.exempt
@@ -75,10 +136,44 @@ def races():
 @app.route('/simulate/<int:race_id>', methods=['GET', 'POST'])
 @csrf.exempt
 def simulate(race_id):
-   # get laps from db
-   laps = Lap.query.where(Lap.raceId == race_id).all()
-   print('Starting simulation', race_id)
-   return render_template('simulate.html', laps=laps)
+   # set simulation values.
+   simulation.lap = 0
+   simulation.raceId = race_id
+   simulation.time = ''
+   # get new simulation values. 
+   lap = simulation.lap
+   raceId = simulation.raceId
+   time = simulation.time
+   # get race information. 
+   race = Race.query.where(Race.raceId == race_id).first()
+   # get circuit info. 
+   circuit = Circuit.query.where(Circuit.circuitId == race.circuitId).first()
+   # get lap data. 
+   race_order = Lap.query.where(Lap.raceId == raceId, lap == simulation.lap).order_by(Lap.time).all()
+   # get fastest laps. 
+   fastest_laps = Lap.query.filter(Lap.raceId == raceId, lap <= simulation.lap, Lap.laptime != 'NaT').order_by(Lap.time).limit(5).all()
+   # get fastest lap. 
+   fastest_lap = Lap.query.filter(Lap.raceId == raceId, lap <= simulation.lap, Lap.laptime != 'NaT').order_by(Lap.time).first()
+   print('Starting simulation:', raceId)
+   return render_template('simulate.html', race_order=race_order, race=race, circuit=circuit, fastest_laps=fastest_laps, fastest_lap=fastest_lap.laptime)
+
+
+@app.route('/update_race_order', methods=['GET', 'POST'])
+@csrf.exempt
+def update_race_order():   
+   # increment lap number. 
+   lap = simulation.incrementLap()
+   # get new simulation values. 
+   lap = simulation.lap
+   raceId = simulation.raceId
+   time = simulation.time
+   # get lap data. 
+   race_order = Lap.query.where(Lap.raceId == raceId, Lap.lapnumber == lap).order_by(Lap.time).all()
+   # format data for json. 
+   race_order = [row.as_dict() for row in race_order]   
+   print('Updating race order ...', lap) 
+   return jsonify(race_order)
+
 
 # use this method to go to drivers page.
 @app.route('/drivers', methods=['GET', 'POST'])

@@ -117,7 +117,7 @@
     <main id="main" class="main">
       <!-- Start Page Title -->
       <div class="pagetitle">
-        <h1>Simulate</h1>
+        <h1>{{ race.name }} ({{ race.year }})</h1>
         <nav>
           <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
@@ -127,43 +127,231 @@
       </div>
       <!-- End Page Title -->
 
-      <section class="section">
+      <section class="section dashboard">
         <div class="row">
-          <div class="col-lg-12">
   
-            <div class="card">
+          <!-- Left side columns -->
+          <div class="col-lg-8">
+            <div class="row">
+  
+              <!-- Start Driver Card -->
+              <div class="col-xxl-4 col-md-6">
+                <div class="card info-card sales-card">                     
+                  <div class="card-body">
+                    <h5 class="card-title">Driver <span>| Driver Name</span></h5>  
+                    <div class="d-flex align-items-center">
+                      <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                        <i class="bi bi-person"></i>
+                      </div>
+                      <div class="ps-3">
+                        <h6>1st</h6>
+                        <span class="text-muted small pt-2 ps-1">position</span>  
+                      </div>
+                    </div>
+                  </div>
+  
+                </div>
+              </div>
+              <!-- End Driver Card -->
+  
+              <!-- Start Team Card -->
+              <div class="col-xxl-4 col-md-6">
+                <div class="card info-card revenue-card">  
+                  <div class="card-body">
+                    <h5 class="card-title">Team <span>| Team Name</span></h5>  
+                    <div class="d-flex align-items-center">
+                      <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                        <i class="bi bi-people"></i>
+                      </div>
+                      <div class="ps-3">
+                        <h6>2</h6>
+                        <span class="text-muted small pt-2 ps-1">drivers</span>  
+                      </div>
+                    </div>
+                  </div>
+  
+                </div>
+              </div>
+              <!-- End Team Card -->
+  
+              <!-- Start Venue Card -->
+              <div class="col-xxl-4 col-xl-12">  
+                <div class="card info-card customers-card">  
+                  <div class="card-body">
+                    <h5 class="card-title">Venue <span>| {{ circuit.location }}</span></h5>  
+                    <div class="d-flex align-items-center">
+                      <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                        <i class="bi bi-geo-alt"></i>
+                      </div>
+                      <div class="ps-3">
+                        <h6>{{ race.round }}</h6>
+                        <span class="text-muted small pt-2 ps-1">round</span>  
+                      </div>
+                    </div>  
+                  </div>
+                </div>  
+              </div>
+              <!-- Start Venue Card -->
+  
+              <!-- Reports -->
+              <div class="col-12">
+                <div class="card">  
+                  <div class="filter">
+                    <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                      <li class="dropdown-header text-start">
+                        <h6>Filter</h6>
+                      </li>  
+                      <li><a class="dropdown-item" href="#">Today</a></li>
+                      <li><a class="dropdown-item" href="#">This Month</a></li>
+                      <li><a class="dropdown-item" href="#">This Year</a></li>
+                    </ul>
+                  </div>  
+                  <div class="card-body">
+                    <h5 class="card-title">Laps <span>/Lap No</span></h5>  
+                    <!-- Line Chart -->
+                    <div id="reportsChart"></div>  
+                    <script>
+                      document.addEventListener("DOMContentLoaded", () => {
+                        new ApexCharts(document.querySelector("#reportsChart"), {
+                          series: [{
+                            name: 'Sales',
+                            data: [31, 40, 28, 51, 42, 82, 56],
+                          }, {
+                            name: 'Revenue',
+                            data: [11, 32, 45, 32, 34, 52, 41]
+                          }, {
+                            name: 'Customers',
+                            data: [15, 11, 32, 18, 9, 24, 11]
+                          }],
+                          chart: {
+                            height: 350,
+                            type: 'area',
+                            toolbar: {
+                              show: false
+                            },
+                          },
+                          markers: {
+                            size: 4
+                          },
+                          colors: ['#4154f1', '#2eca6a', '#ff771d'],
+                          fill: {
+                            type: "gradient",
+                            gradient: {
+                              shadeIntensity: 1,
+                              opacityFrom: 0.3,
+                              opacityTo: 0.4,
+                              stops: [0, 90, 100]
+                            }
+                          },
+                          dataLabels: {
+                            enabled: false
+                          },
+                          stroke: {
+                            curve: 'smooth',
+                            width: 2
+                          },
+                          xaxis: {
+                            type: 'datetime',
+                            categories: ["2018-09-19T00:00:00.000Z", "2018-09-19T01:30:00.000Z", "2018-09-19T02:30:00.000Z", "2018-09-19T03:30:00.000Z", "2018-09-19T04:30:00.000Z", "2018-09-19T05:30:00.000Z", "2018-09-19T06:30:00.000Z"]
+                          },
+                          tooltip: {
+                            x: {
+                              format: 'dd/MM/yy HH:mm'
+                            },
+                          }
+                        }).render();
+                      });
+                    </script>
+                    <!-- End Line Chart -->  
+                  </div>  
+                </div>
+              </div>              
+            </div>
+          </div>
+          <!-- End Left side columns -->
+  
+          <!-- Right side columns -->
+          <div class="col-lg-4">
+            <div class="card">                
               <div class="card-body">
-                <h5 class="card-title">All Laps</h5>
-  
-                <!-- Table with stripped rows -->
-                {% if laps %}
-                <table class="table datatable">
+                <h5 id="race-order-title" class="card-title">Race Order <span>| Lap</span></h5>  
+                <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+                <script>
+                  $(document).ready(function() {
+                    setInterval(function() {
+                      $.ajax({
+                        url: "{{ url_for('update_race_order') }}",
+                        success: function(data) {
+                          var html = "";
+                          var pos = 1;
+                          var title = "Race Order <span> | Lap: " + data[0].lapnumber + "</span>"
+                          $.each(data, function(key, value) {
+                            html += "<tr><td>" + pos + "</td><td>" + value.driver + "</td><td>" + value.compound + "</td><td>" + value.compound + "</td></tr>";
+                            pos++;
+                          });
+                          $("tbody#race-order-table").html(html);
+                          $("h5#race-order-title").html(title);
+                        }
+                      });
+                    }, 5000);
+                  });
+                </script>
+
+                <!-- Start Race Order Table -->
+                <table class="table table-hover">
                   <thead>
                     <tr>
                       <th scope="col">#</th>
-                      <th scope="col">Time</th>
                       <th scope="col">Driver</th>
-                      <th scope="col">Team</th>
+                      <th scope="col">Tyre</th>
+                      <th scope="col">Gap</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {% for lap in laps %}
-                    <tr>
-                      <th scope="row">{{ lap.lapnumber }}</th>
-                      <td>{{ lap.time }}</td>
-                      <td>{{ lap.driver }}</td>
-                      <td>{{ lap.team }}</td>                      
-                    </tr>
-                    {% endfor %}
+                  <tbody id="race-order-table">
+                    <!-- Rows Automaticcaly Updated Using AJAX -->
                   </tbody>
                 </table>
-                <!-- End Table with stripped rows -->
-                {% else %}                
-                <p>No laps found!</p>
-                {% endif %}  
-              </div>
-            </div>  
+                <!-- End Race Order Table -->
+                </div>
+              </div>  
+              <!-- End Race Order -->
+        
+            <!-- Start Fastest Laps -->
+            <div class="card">                
+              <div class="card-body">
+                <h5 class="card-title">Fastest Laps <span>| Fastest</span></h5>   
+                    <!-- Start Race Order Table -->
+                    {% if fastest_laps %}
+                    <table class="table table-hover">
+                      <thead>
+                        <tr>
+                          <th scope="col">#</th>
+                          <th scope="col">Driver</th>
+                          <th scope="col">Tyre</th>
+                          <th scope="col">Gap</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for lap in fastest_laps %}
+                        <tr>
+                          <th scope="row">{{ loop.index }}</th>
+                          <td>{{ lap.driver }}</td>
+                          <td>{{ lap.laptime }}</td>
+                          <td>N/A</td>
+                        </tr>  
+                        {% endfor %}                
+                      </tbody>
+                    </table>
+                    {% else %}                
+                    <p>No laps found!</p>
+                    {% endif %}  
+                    <!-- End Race Order Table --> 
+              </div>              
+            </div>
+            <!-- End Fastest Laps --> 
           </div>
+          <!-- End Right side columns -->  
         </div>
       </section>
 
