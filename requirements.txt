@@ -13,3 +13,4 @@ flask_wtf
 numpy
 jinja2
 markupsafe
+sympy

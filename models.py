@@ -1,8 +1,7 @@
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Float, Date, Time, Boolean
 from sqlalchemy.orm import validates
-
 from app import db
-
+    
 # here i define my data as objects. this information will be used to create my tables. 
 # this will make it easier to deply my database and apply changes to the schema. 
 class Circuit(db.Model):
@@ -125,14 +124,16 @@ class Lap(db.Model):
     isaccurate = Column(Boolean)    
 
     def __str__(self):
-        return self.year
+        return f"(lapnumber={self.lapnumber}, driver='{self.driver}', team='{self.team}', compound='{self.compound}', laptime={self.laptime}, time={self.time})"
     
     def as_dict(self):
         return {
             'lapnumber': self.lapnumber,
             'driver': self.driver,
             'team': self.team,
-            'compound': self.compound
+            'compound': self.compound,
+            'laptime': self.laptime,
+            'time': self.time
         }
     
 class TrackStatus(db.Model):

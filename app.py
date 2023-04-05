@@ -16,47 +16,10 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from flask_wtf.csrf import CSRFProtect
+from classes import RaceOrder, Race
 
 
-class Race:
-    def __init__(self, lap, raceId, time):
-        self._lap = lap
-        self._raceId = raceId
-        self._time = time
-
-    # Getters
-    @property
-    def lap(self):
-        return self._lap
-
-    @property
-    def raceId(self):
-        return self._raceId
-
-    @property
-    def time(self):
-        return self._time
-
-    # Setters
-    @lap.setter
-    def lap(self, value):
-        self._lap = value
-
-    @raceId.setter
-    def raceId(self, value):
-        self._raceId = value
-
-    @time.setter
-    def time(self, value):
-        self._time = value
-
-    # Increment Methods
-    def incrementLap(self):
-        self._lap += 1
-
-    def incrementTime(self, increment):
-        self._time += increment
-
+# create default race. 
 simulation = Race(0, 0, '')
 
 # check if ff1 cache folder exists.
@@ -137,7 +100,7 @@ def races():
 @csrf.exempt
 def simulate(race_id):
    # set simulation values.
-   simulation.lap = 0
+   simulation.lap = 1
    simulation.raceId = race_id
    simulation.time = ''
    # get new simulation values. 
@@ -148,32 +111,69 @@ def simulate(race_id):
    race = Race.query.where(Race.raceId == race_id).first()
    # get circuit info. 
    circuit = Circuit.query.where(Circuit.circuitId == race.circuitId).first()
-   # get lap data. 
-   race_order = Lap.query.where(Lap.raceId == raceId, lap == simulation.lap).order_by(Lap.time).all()
-   # get fastest laps. 
-   fastest_laps = Lap.query.filter(Lap.raceId == raceId, lap <= simulation.lap, Lap.laptime != 'NaT').order_by(Lap.time).limit(5).all()
-   # get fastest lap. 
-   fastest_lap = Lap.query.filter(Lap.raceId == raceId, lap <= simulation.lap, Lap.laptime != 'NaT').order_by(Lap.time).first()
    print('Starting simulation:', raceId)
-   return render_template('simulate.html', race_order=race_order, race=race, circuit=circuit, fastest_laps=fastest_laps, fastest_lap=fastest_lap.laptime)
+   return render_template('simulate.html', race=race, circuit=circuit)
 
 
 @app.route('/update_race_order', methods=['GET', 'POST'])
 @csrf.exempt
-def update_race_order():   
-   # increment lap number. 
-   lap = simulation.incrementLap()
+def update_race_order():
    # get new simulation values. 
    lap = simulation.lap
    raceId = simulation.raceId
    time = simulation.time
    # get lap data. 
-   race_order = Lap.query.where(Lap.raceId == raceId, Lap.lapnumber == lap).order_by(Lap.time).all()
+   race_order = Lap.query.where(Lap.raceId == raceId, Lap.lapnumber == lap).order_by(Lap.time).all()    
+   # calculate gaps between drivers. 
+   data = calculate_interval(race_order.copy())
    # format data for json. 
-   race_order = [row.as_dict() for row in race_order]   
+   data = [row.as_dict() for row in data]
+   # increment lap number. 
+   simulation.incrementLap()
    print('Updating race order ...', lap) 
-   return jsonify(race_order)
+   return jsonify(data)
 
+@app.route('/update_fastest_laps', methods=['GET', 'POST'])
+@csrf.exempt
+def update_fastest_laps():
+   # get new simulation values. 
+   lap = simulation.lap
+   raceId = simulation.raceId
+   time = simulation.time
+   # get fastest laps. 
+   fastest_laps = Lap.query.filter(Lap.raceId == raceId, Lap.lapnumber <= lap, Lap.laptime != 'NaT').order_by(Lap.laptime).limit(5).all()    
+   # format data for json. 
+   fastest_laps = [row.as_dict() for row in fastest_laps]
+   print('Updating fastest laps ...', lap) 
+   return jsonify(fastest_laps)
+
+def format_gap(td):
+    hours, remainder = divmod(td.seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    milliseconds = td.microseconds // 1000
+    return '{:02}:{:02}.{:03}'.format(int(minutes), int(seconds), milliseconds)
+
+def calculate_interval(data):
+   # create array to store gaps. 
+   time_diffs = []
+   # set previous time to leaders time so gap is zero. 
+   prev_time = pd.to_timedelta(data[0].time)
+   leader = pd.to_timedelta(data[0].time)
+   # loop data to calculate gaps. 
+   for lap in data:
+      # convert time to timedelta. 
+      curr_time = pd.to_timedelta(lap.time)
+      # calculate difference. 
+      time_diff = curr_time - prev_time
+      behind = curr_time - leader
+      # create new race order object.       
+      race_order = RaceOrder(lap.lapnumber, lap.driver, lap.team, lap.compound, lap.time, format_gap(time_diff), format_gap(behind))
+      # add race order to array. 
+      time_diffs.append(race_order)
+      # set previous value to current value for next calculation. 
+      prev_time = curr_time
+
+   return time_diffs
 
 # use this method to go to drivers page.
 @app.route('/drivers', methods=['GET', 'POST'])
