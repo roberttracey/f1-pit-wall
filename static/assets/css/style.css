@@ -835,6 +835,16 @@ h6 {
   background: #ffecdf;
 }
 
+.dashboard .defend-card .card-icon {
+  color: #ca2e3b;
+  background: #faa1a1;
+}
+
+.dashboard .attack-card .card-icon {
+  color: #2eca6a;
+  background: #e0f8e9;
+}
+
 /* Activity */
 .dashboard .activity {
   font-size: 14px;

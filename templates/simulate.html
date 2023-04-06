@@ -153,27 +153,7 @@
                 </div>
               </div>
               <!-- End Driver Card -->
-  
-              <!-- Start Team Card -->
-              <div class="col-xxl-4 col-md-6">
-                <div class="card info-card revenue-card">  
-                  <div class="card-body">
-                    <h5 class="card-title">Team <span>| Team Name</span></h5>  
-                    <div class="d-flex align-items-center">
-                      <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                        <i class="bi bi-people"></i>
-                      </div>
-                      <div class="ps-3">
-                        <h6>2</h6>
-                        <span class="text-muted small pt-2 ps-1">drivers</span>  
-                      </div>
-                    </div>
-                  </div>
-  
-                </div>
-              </div>
-              <!-- End Team Card -->
-  
+
               <!-- Start Venue Card -->
               <div class="col-xxl-4 col-xl-12">  
                 <div class="card info-card customers-card">  
@@ -193,7 +173,59 @@
               </div>
               <!-- Start Venue Card -->
   
-              <!-- Reports -->
+              <!-- Start Status Card -->
+              <div class="col-xxl-4 col-md-6">
+                <div class="card info-card revenue-card">  
+                  <div class="card-body">
+                    <h5 class="card-title">Track Status <span>| Status</span></h5>  
+                    <div class="d-flex align-items-center">
+                      <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                        <i class="bi bi-flag"></i>
+                      </div>
+                      <div class="ps-3">
+                        <h6>2</h6>
+                        <span class="text-muted small pt-2 ps-1">drivers</span>  
+                      </div>
+                    </div>
+                  </div>
+  
+                </div>
+              </div>
+              <!-- End Status Card -->
+
+              <!-- Start Attack Card -->
+              <div class="col-xxl-6 col-md-6">
+                <div class="card info-card attack-card">                     
+                  <div class="card-body">
+                    <h5 class="card-title">Attack</h5>  
+                    <div class="d-flex align-items-center">
+                      <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                        <i class="bi bi-graph-up-arrow"></i>
+                      </div>
+                    </div>
+                  </div>
+  
+                </div>
+              </div>
+              <!-- End Attack Card -->
+  
+              <!-- Start Defend Card -->
+              <div class="col-xxl-6 col-md-6">
+                <div class="card info-card customers-card">  
+                  <div class="card-body">
+                    <h5 class="card-title">Defend </h5>  
+                    <div class="d-flex align-items-center">
+                      <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                        <i class="bi bi-graph-down-arrow"></i>
+                      </div>
+                    </div>
+                  </div>
+  
+                </div>
+              </div>
+              <!-- End Defend Card -->
+
+              <!-- Start Laps Graph -->
               <div class="col-12">
                 <div class="card">  
                   <div class="filter">
@@ -266,7 +298,8 @@
                     <!-- End Line Chart -->  
                   </div>  
                 </div>
-              </div>              
+              </div>    
+              <!-- End Laps Graph -->          
             </div>
           </div>
           <!-- End Left side columns -->
@@ -287,11 +320,16 @@
                           var pos = 1;
                           var title = "Race Order <span> | Lap: " + data[0].lapnumber + "</span>"
                           $.each(data, function(key, value) {
-                            html += "<tr><td>" + pos + "</td><td>" + value.driver + "</td><td>" + value.compound + "</td><td>" + value.gap + "</td><td>" + value.behind + "</td></tr>";
+                            if (value.lapnumber % 2 === 0) {
+                              html += "<tr><td>" + pos + "</td><td>" + value.driver + "</td><td>" + value.compound + "</td><td>" + value.gap + "</td></tr>";
+                              } else {
+                                html += "<tr><td>" + pos + "</td><td>" + value.driver + "</td><td>" + value.tyrelife + " Lap(s) </td><td>" + value.behind + "</td></tr>";
+                              }                            
                             pos++;
                           });
                           $("tbody#race-order-table").html(html);
                           $("h5#race-order-title").html(title);
+                          removeElement("race-order-loading");
                         }
                       });
                     }, 5000);
@@ -299,20 +337,24 @@
                 </script>
 
                 <!-- Start Race Order Table -->
-                <table class="table table-hover">
+                <table class="table table-sm table-hover">
                   <thead>
                     <tr>
                       <th scope="col">#</th>
                       <th scope="col">Driver</th>
                       <th scope="col">Tyre</th>
-                      <th scope="col">Gap</th>
-                      <th scope="col">Leader</th>
+                      <th scope="col">Timing</th>
                     </tr>
                   </thead>
-                  <tbody id="race-order-table">
+                  <tbody id="race-order-table">                    
                     <!-- Rows Automaticcaly Updated Using AJAX -->
                   </tbody>
                 </table>
+                <div id="race-order-loading" class="d-flex justify-content-center">
+                  <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                </div>
                 <!-- End Race Order Table -->
                 </div>
               </div>  
@@ -332,20 +374,21 @@
                           success: function(data) {
                             var html = "";
                             var pos = 1;
-                            var title = "Fastest Laps <span> | Driver: " + data[0].driver + "</span>"
+                            var title = "Fastest Laps <span> | Fastest: " + data[0].driver + "</span>"
                             $.each(data, function(key, value) {
                               html += "<tr><td>" + pos + "</td><td>" + value.driver + "</td><td>" + formatTimeDelta(value.laptime) + "</td></tr>";
                               pos++;
                             });
                             $("tbody#fastest-laps-table").html(html);
                             $("h5#fastest-laps-title").html(title);
+                            removeElement("fastest-lap-loading");
                           }
                         });
                       }, 5000);
                     });
                   </script> 
                     <!-- Start Race Order Table -->
-                    <table class="table table-hover">
+                    <table class="table table-sm table-hover">
                       <thead>
                         <tr>
                           <th scope="col">#</th>
@@ -357,6 +400,11 @@
                         <!-- Rows Automaticcaly Updated Using AJAX -->              
                       </tbody>
                     </table>
+                    <div id="fastest-lap-loading" class="d-flex justify-content-center">
+                      <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
                     <!-- End Race Order Table --> 
               </div>              
             </div>
@@ -376,7 +424,7 @@
           var seconds = Math.floor(totalSeconds - (hours * 3600) - (minutes * 60));
           var milliseconds = Math.floor(td % 1000);
 
-          return (td < 0 ? '-' : '') + hours + ':' + minutes + ':' + seconds + '.' + milliseconds;
+          return (td < 0 ? '-' : '') + minutes + ':' + seconds + '.' + padZeroes(milliseconds, 3);
         }
 
         function padZeroes(number, length) {
@@ -395,6 +443,13 @@
           const seconds = parseFloat(parts[2]);
           return ((hours * 60 + minutes) * 60 + seconds) * 1000;
         }
+
+        function removeElement(id) {
+        const element = document.getElementById(id);
+        if (element) {
+          element.remove();
+        }
+      }
 
       </script>
 

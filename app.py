@@ -16,11 +16,13 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from flask_wtf.csrf import CSRFProtect
-from classes import RaceOrder, Race
+from classes import RaceOrder, Simulation
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
+from sqlalchemy import create_engine, text
 
 
 # create default race. 
-simulation = Race(0, 0, '')
+simulation = Simulation(0, 0, '')
 
 # check if ff1 cache folder exists.
 ff1_cache = 'fastf1'
@@ -72,12 +74,37 @@ def format_timedelta(value):
 # add custom filter to app. 
 app.jinja_env.filters['format_timedelta'] = format_timedelta
 
+# use this method to retrieve data using sql queries. 
+def query_db(query):
+   # create engine. 
+   engine = create_engine(app.config.get('DATABASE_URI'))
+   # define SQL query
+   query = text(query)
+   # execute query
+   with engine.connect() as conn:
+      result = conn.execute(query)
+   # clean up database connection
+   engine.dispose()
+   return result
+
 # use this method to return to home page.
 @app.route('/')
 @csrf.exempt
 def index():
+   # define sql query
+   races_query = 'SELECT DISTINCT r.raceid, r.date, r.name FROM laps l, races r WHERE l.raceid = r.raceid ORDER BY r.raceid DESC LIMIT 8;'
+   # get data.
+   recent_races = query_db(races_query)
+   # get race count.
+   races_count = Lap.query.group_by(Lap.raceId).count()
+   # get driver count.
+   driver_count = Driver.query.group_by(Driver.driverId).count()
+   # get teams count.
+   team_count = Constructor.query.group_by(Constructor.constructorId).count()
+   # print to console. 
    print('Request for index page received')
-   return render_template('index.html')
+   # go to index page, and send race data. 
+   return render_template('index.html', recent_races=recent_races, races_count=races_count, driver_count=driver_count, team_count=team_count)
 
 
 @app.route('/favicon.ico')
@@ -167,7 +194,7 @@ def calculate_interval(data):
       time_diff = curr_time - prev_time
       behind = curr_time - leader
       # create new race order object.       
-      race_order = RaceOrder(lap.lapnumber, lap.driver, lap.team, lap.compound, lap.time, format_gap(time_diff), format_gap(behind))
+      race_order = RaceOrder(lap.lapnumber, lap.driver, lap.team, lap.compound, lap.tyrelife, lap.time, format_gap(time_diff), format_gap(behind))
       # add race order to array. 
       time_diffs.append(race_order)
       # set previous value to current value for next calculation. 
