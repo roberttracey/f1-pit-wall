@@ -22,7 +22,7 @@ from sqlalchemy import create_engine, text
 
 
 # create default race. 
-simulation = Simulation(0, 0, '')
+simulation = Simulation(0, 0, 830)
 
 # check if ff1 cache folder exists.
 ff1_cache = 'fastf1'
@@ -71,8 +71,13 @@ def format_timedelta(value):
     milliseconds = td.microseconds // 1000
     return '{:02}:{:02}.{:03}'.format(int(minutes), int(seconds), milliseconds)
 
-# add custom filter to app. 
+def ordinal(value):
+    suffix = 'th' if 11 <= value % 100 <= 13 else {1: 'st', 2: 'nd', 3: 'rd'}.get(value % 10, 'th')
+    return f'{value}{suffix}'
+
+# add custom filters to app. 
 app.jinja_env.filters['format_timedelta'] = format_timedelta
+app.jinja_env.filters['ordinal'] = ordinal
 
 # use this method to retrieve data using sql queries. 
 def query_db(query):
@@ -129,17 +134,20 @@ def simulate(race_id):
    # set simulation values.
    simulation.lap = 1
    simulation.raceId = race_id
-   simulation.time = ''
    # get new simulation values. 
    lap = simulation.lap
    raceId = simulation.raceId
-   time = simulation.time
+   driverId = simulation.driver
    # get race information. 
    race = Race.query.where(Race.raceId == race_id).first()
    # get circuit info. 
    circuit = Circuit.query.where(Circuit.circuitId == race.circuitId).first()
+   # get default driver information. 
+   driver = Driver.query.where(Driver.driverId == driverId).first()
+   # get qualifying position. 
+   qual_position = Qualifying.query.where(Qualifying.raceId == race_id, Qualifying.driverId == driverId).first()
    print('Starting simulation:', raceId)
-   return render_template('simulate.html', race=race, circuit=circuit)
+   return render_template('simulate.html', race=race, circuit=circuit, driver=driver, qual_position=qual_position.position)
 
 
 @app.route('/update_race_order', methods=['GET', 'POST'])
@@ -148,7 +156,6 @@ def update_race_order():
    # get new simulation values. 
    lap = simulation.lap
    raceId = simulation.raceId
-   time = simulation.time
    # get lap data. 
    race_order = Lap.query.where(Lap.raceId == raceId, Lap.lapnumber == lap).order_by(Lap.time).all()    
    # calculate gaps between drivers. 
@@ -160,13 +167,29 @@ def update_race_order():
    print('Updating race order ...', lap) 
    return jsonify(data)
 
+# use this method during a simulation to get the selected drivers position. 
+def current_position(race_order):
+   # get driverid, 
+   driverId = simulation.driver
+   # set default position to first. 
+   pos = 1
+   driver_pos = 1
+   # loop current race order. 
+   for order in race_order:
+      if order.driverId == driverId:
+         driver_pos = pos
+         break
+      else:
+         pos = pos + 1
+
+   return driver_pos
+
 @app.route('/update_fastest_laps', methods=['GET', 'POST'])
 @csrf.exempt
 def update_fastest_laps():
    # get new simulation values. 
    lap = simulation.lap
    raceId = simulation.raceId
-   time = simulation.time
    # get fastest laps. 
    fastest_laps = Lap.query.filter(Lap.raceId == raceId, Lap.lapnumber <= lap, Lap.laptime != 'NaT').order_by(Lap.laptime).limit(5).all()    
    # format data for json. 
