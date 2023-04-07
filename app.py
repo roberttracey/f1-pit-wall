@@ -247,9 +247,13 @@ def settings():
 @app.route('/import_laps', methods=['POST'])
 @csrf.exempt
 def import_laps():
-   races = Race.query.where(Race.year >= 2019, Race.date <= date.today()).all()
-   # get_session(2022, 'Bahrain', 'Race')
-   # print('Importing laps ...')
+   # get last race in laps. 
+   last_lap = Lap.query.order_by(Lap.lapId.desc()).limit(1).first()
+   # get details of last race. 
+   last_race = Race.query.where(Race.raceId == last_lap.raceId).limit(1).first()   
+   # get races using year, round and date before today. 
+   races = Race.query.where(Race.year >= last_race.year, Race.round > last_race.round, Race.date <= date.today()).all()
+   # loop races and import data. 
    for r in races:
       # print(r.year, r.round, r.date)
       session = fastf1.get_session(r.year, r.round, 'Race')
@@ -325,9 +329,9 @@ def import_laps():
             lap.isaccurate = df['IsAccurate'][i]
          db.session.add(lap) 
       db.session.commit()
-      
+
    # return to home page.
-   return render_template('settings.html')
+   return render_template('races.html')
 
 # use this method to return to standing page.
 @app.route('/import_data', methods=['POST'])

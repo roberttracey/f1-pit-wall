@@ -88,13 +88,13 @@
           </a>
           <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
             <li>
-              <a href="components-breadcrumbs.html">
+              <a href="" data-bs-toggle="modal" data-bs-target="#importhistorialdata">
                 <i class="bi bi-circle"></i>
-                <span>Import Races</span>
+                <span>Import Race Data</span>
               </a>
             </li>
             <li>
-              <a href="components-buttons.html">
+              <a href="" data-bs-toggle="modal" data-bs-target="#importlaps">
                 <i class="bi bi-circle"></i>
                 <span>Import Laps</span>
               </a>
@@ -234,6 +234,51 @@
           </div>
           <!-- End Right Side Columns -->
         </div>
+
+        <!-- Start Import Laps Modal -->  
+        <form method="POST" action="{{ url_for('import_laps') }}">           
+          <div class="modal fade" id="importlaps" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Import Laps</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  Are you sure you want to import more laps from FastF1 (this may take some time)?
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  <button type="submit" class="btn btn-primary">Yes</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>   
+        <!-- End Import Laps Modal -->
+
+        <!-- Start Import Historial Data Modal -->  
+        <form method="POST" action="{{ url_for('import_data') }}">           
+          <div class="modal fade" id="importhistorialdata" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Import Race Data</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  Are you sure you want tom import histoical race data (races, drivers, constructors etc.)?
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  <button type="submit" class="btn btn-primary">Yes</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>   
+        <!-- End Import Historial Data Modal -->
+
       </section>
     </main>
     <!-- ======= End Main ======= -->
