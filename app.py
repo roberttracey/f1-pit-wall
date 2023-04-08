@@ -19,6 +19,11 @@ from flask_wtf.csrf import CSRFProtect
 from classes import RaceOrder, Simulation
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, Table, Column, Integer, JSON
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+import json
+import requests
 
 
 # create default race. 
@@ -272,12 +277,19 @@ def settings():
 def import_laps():
    # get last race in laps. 
    last_lap = Lap.query.order_by(Lap.lapId.desc()).limit(1).first()
+   print('last_lap:', last_lap)
    # get details of last race. 
    last_race = Race.query.where(Race.raceId == last_lap.raceId).limit(1).first()   
+   print('last_race:', last_race)
    # get races using year, round and date before today. 
-   races = Race.query.where(Race.year >= last_race.year, Race.round > last_race.round, Race.date <= date.today()).all()
+   races = Race.query.where(Race.year >= last_race.year, Race.round > 0, Race.date <= date.today()).all()
+   print('races:', races)
    # loop races and import data. 
    for r in races:
+      # get qualy results. 
+      get_qualifying(r.year, r.round)
+      # get new constructor standings
+      get_constructorStandings(r.year, r.round)
       # print(r.year, r.round, r.date)
       session = fastf1.get_session(r.year, r.round, 'Race')
       print('Importing:', r.year, r.name)
@@ -354,7 +366,7 @@ def import_laps():
       db.session.commit()
 
    # return to home page.
-   return render_template('races.html')
+   return redirect(url_for('index'))
 
 # use this method to return to standing page.
 @app.route('/import_data', methods=['POST'])
@@ -499,6 +511,92 @@ def import_data():
    # return to home page.
    return render_template('settings.html')
 
+# use this method to return to standing page.
+@app.route('/get_qualifying', methods=['GET', 'POST'])
+@csrf.exempt
+def get_qualifying(year, round):
+    # generate url. 
+   url = f"http://ergast.com/api/f1/{year}/{round}/qualifying.json"
+   payload={}
+   headers = {}
+   # send request.
+   response = requests.request("GET", url, headers=headers, data=payload)
+   # parse json.
+   data = json.loads(response.text)
+   # qualifying results as array. 
+   results = data['MRData']['RaceTable']['Races'][0]['QualifyingResults']
+   # get race id.
+   race_id = get_raceid(year, round)
+   # loop qualy results and get attributes. 
+   for result in results:
+      # create qualifying object. 
+      qualy = Qualifying()
+      # set values.          
+      qualy.raceId = race_id
+      qualy.driverId = get_driverid(result['Driver']['driverId'])
+      qualy.constructorId = get_constructorid(result['Constructor']['constructorId'])
+      qualy.number = result['number']
+      qualy.position = result['position']
+      if 'Q1' in result:
+         qualy.q1 = result['Q1']
+      else:
+         qualy.q1 = ''
+      if 'Q2' in result:
+         qualy.q2 = result['Q2']
+      else:
+         qualy. q2 = ''
+      if 'Q3' in result:
+         qualy.q3 = result['Q3']
+      else:
+         qualy.q3 = ''    
+      # add to db.
+      db.session.add(qualy) 
+   # commit chnages to db. 
+   db.session.commit()
+
+def get_constructorStandings(year, round):
+   # generate url. 
+   url = f"http://ergast.com/api/f1/{year}/{round}/constructorStandings.json"
+   payload={}
+   headers = {}
+   # send request.
+   response = requests.request("GET", url, headers=headers, data=payload)
+   # parse json.
+   data = json.loads(response.text)
+   # qualifying results as array. 
+   results = data['MRData']['StandingsTable']['StandingsLists'][0]['ConstructorStandings']
+   # get race id.
+   race_id = get_raceid(year, round)
+   for result in results:
+      # create standing object. 
+      standing = ConstructorStanding()
+      # set values.          
+      standing.raceId = race_id
+      standing.constructorId = get_constructorid(result['Constructor']['constructorId'])
+      standing.points = result['points']
+      standing.position = result['position']
+      standing.positionText = result['positionText']
+      standing.wins = wins = result['wins']
+      # add to db.
+      db.session.add(standing) 
+   # commit chnages to db. 
+   db.session.commit()
+
+
+# use this method to get race id by year and round. 
+def get_raceid(year, round):
+   race = Race.query.where(Race.year == year, Race.round == round).first()
+   return race.raceId
+
+# use this method to get driver id by driver ref.
+def get_driverid(driver_ref):
+   driver = Driver.query.where(Driver.driverRef == driver_ref).first()
+   return driver.driverId
+
+# use this method to get constructor id by constructor ref.
+def get_constructorid(constructor_ref):
+   constructor = Constructor.query.where(Constructor.constructorRef == constructor_ref).first()
+   return constructor.constructorId
 
 if __name__ == '__main__':
    app.run()

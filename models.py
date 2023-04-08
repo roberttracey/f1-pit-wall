@@ -177,6 +177,19 @@ class Qualifying(db.Model):
     def __str__(self):
         return self.qualifyId
     
+    def as_dict(self):
+        return {
+            'qualifyId': self.qualifyId,
+            'raceId': self.raceId,
+            'driverId': self.driverId,
+            'constructorId': self.constructorId,
+            'number': self.number,
+            'position': self.position,
+            'q1': self.q1,
+            'q2': self.q2,
+            'q3': self.q3
+        }
+    
     
 class Race(db.Model):
     __tablename__ = 'races'
@@ -200,7 +213,7 @@ class Race(db.Model):
     sprint_time = Column(Time)
 
     def __str__(self):
-        return self.name
+        return f"(raceId={self.raceId}, year={self.year}, round={self.round}, name={self.name}')"
     
     
 class Result(db.Model):
