@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: a19577e99743
+Revision ID: 3fb18632372a
 Revises: 
-Create Date: 2023-03-17 15:20:54.369447
+Create Date: 2023-04-11 18:58:48.702693
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'a19577e99743'
+revision = '3fb18632372a'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -161,7 +161,7 @@ def upgrade():
     sa.Column('driverId', sa.Integer(), nullable=False),
     sa.Column('stop', sa.Integer(), nullable=False),
     sa.Column('lap', sa.Integer(), nullable=False),
-    sa.Column('time', sa.Integer(), nullable=True),
+    sa.Column('time', sa.String(length=255), nullable=True),
     sa.Column('duration', sa.String(length=255), nullable=True),
     sa.Column('milliseconds', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['driverId'], ['drivers.driverId'], ondelete='CASCADE'),
@@ -193,7 +193,7 @@ def upgrade():
     sa.Column('position', sa.Integer(), nullable=True),
     sa.Column('positionText', sa.String(length=255), nullable=False),
     sa.Column('positionOrder', sa.Integer(), nullable=False),
-    sa.Column('points', sa.Integer(), nullable=False),
+    sa.Column('points', sa.Float(), nullable=False),
     sa.Column('laps', sa.Integer(), nullable=False),
     sa.Column('time', sa.String(length=255), nullable=True),
     sa.Column('milliseconds', sa.Integer(), nullable=True),
@@ -218,12 +218,12 @@ def upgrade():
     sa.Column('position', sa.Integer(), nullable=True),
     sa.Column('positionText', sa.String(length=255), nullable=False),
     sa.Column('positionOrder', sa.Integer(), nullable=False),
-    sa.Column('points', sa.Integer(), nullable=False),
+    sa.Column('points', sa.Float(), nullable=False),
     sa.Column('laps', sa.Integer(), nullable=False),
     sa.Column('time', sa.String(length=255), nullable=True),
     sa.Column('milliseconds', sa.Integer(), nullable=True),
     sa.Column('fastestLap', sa.Integer(), nullable=True),
-    sa.Column('fastestLapTime', sa.Integer(), nullable=True),
+    sa.Column('fastestLapTime', sa.String(length=255), nullable=True),
     sa.Column('statusId', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['constructorId'], ['constructors.constructorId'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['driverId'], ['drivers.driverId'], ondelete='CASCADE'),

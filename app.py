@@ -277,19 +277,30 @@ def settings():
 def import_laps():
    # get last race in laps. 
    last_lap = Lap.query.order_by(Lap.lapId.desc()).limit(1).first()
-   print('last_lap:', last_lap)
-   # get details of last race. 
-   last_race = Race.query.where(Race.raceId == last_lap.raceId).limit(1).first()   
-   print('last_race:', last_race)
+   # if table is empty, start importing from 2019.
+   if last_lap is None:
+      start_date = '2019-03-01'
+   else:
+      # get details of last race. 
+      last_race = Race.query.where(Race.raceId == last_lap.raceId).limit(1).first()    
+      start_date = last_race.date
    # get races using year, round and date before today. 
-   races = Race.query.where(Race.year >= last_race.year, Race.round > 0, Race.date <= date.today()).all()
+   races = Race.query.where(Race.date > start_date, Race.date <= date.today()).all()
    print('races:', races)
    # loop races and import data. 
    for r in races:
       # get qualy results. 
       get_qualifying(r.year, r.round)
       # get new constructor standings
-      get_constructorStandings(r.year, r.round)
+      get_constructor_standings(r.year, r.round)
+      # get new driver standings
+      get_driver_standings(r.year, r.round)
+      # get pitstops
+      get_pitstops(r.year, r.round)
+      # get race results
+      get_results(r.year, r.round)
+      # get sprint results
+      get_sprint_results(r.year, r.round)
       # print(r.year, r.round, r.date)
       session = fastf1.get_session(r.year, r.round, 'Race')
       print('Importing:', r.year, r.name)
@@ -430,73 +441,73 @@ def import_data():
    # insert dataframe into database.
    df.to_sql(name='status', con=engine, if_exists='append', index=False)  
 
-   print('Importing constructor results ...')
-   from data import constructorresults
-   # define table columns.
-   columns = ['constructorResultsId', 'raceId', 'constructorId', 'points', 'status']
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(constructorresults, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='constructorresults', con=engine, if_exists='append', index=False)
+   # print('Importing constructor results ...')
+   # from data import constructorresults
+   # # define table columns.
+   # columns = ['constructorResultsId', 'raceId', 'constructorId', 'points', 'status']
+   # # create the pandas dataframe with column name is provided explicitly
+   # df = pd.DataFrame(constructorresults, columns=columns)   
+   # # insert dataframe into database.
+   # df.to_sql(name='constructorresults', con=engine, if_exists='append', index=False)
 
-   print('Importing constructor standings  ...')
-   from data import constructorstandings
-   # define table columns.
-   columns = ['constructorStandingsId', 'raceId', 'constructorId', 'points', 'position', 'positionText', 'wins']
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(constructorstandings, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='constructorstandings', con=engine, if_exists='append', index=False)
+   # print('Importing constructor standings  ...')
+   # from data import constructorstandings
+   # # define table columns.
+   # columns = ['constructorStandingsId', 'raceId', 'constructorId', 'points', 'position', 'positionText', 'wins']
+   # # create the pandas dataframe with column name is provided explicitly
+   # df = pd.DataFrame(constructorstandings, columns=columns)   
+   # # insert dataframe into database.
+   # df.to_sql(name='constructorstandings', con=engine, if_exists='append', index=False)
 
-   print('Importing driver standings ...')
-   from data import driverstandings
-   # define table columns.
-   columns = ['driverStandingsId', 'raceId', 'driverId', 'points', 'position', 'positionText', 'wins']
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(driverstandings, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='driverstandings', con=engine, if_exists='append', index=False)
+   # print('Importing driver standings ...')
+   # from data import driverstandings
+   # # define table columns.
+   # columns = ['driverStandingsId', 'raceId', 'driverId', 'points', 'position', 'positionText', 'wins']
+   # # create the pandas dataframe with column name is provided explicitly
+   # df = pd.DataFrame(driverstandings, columns=columns)   
+   # # insert dataframe into database.
+   # df.to_sql(name='driverstandings', con=engine, if_exists='append', index=False)
 
-   print('Importing pit stops ...')
-   from data import pitstops
-   # define table columns.
-   columns = ['raceId', 'driverId', 'stop', 'lap', 'time', 'duration', 'milliseconds']
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(pitstops, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='pitstops', con=engine, if_exists='append', index=False)
+   # print('Importing pit stops ...')
+   # from data import pitstops
+   # # define table columns.
+   # columns = ['raceId', 'driverId', 'stop', 'lap', 'time', 'duration', 'milliseconds']
+   # # create the pandas dataframe with column name is provided explicitly
+   # df = pd.DataFrame(pitstops, columns=columns)   
+   # # insert dataframe into database.
+   # df.to_sql(name='pitstops', con=engine, if_exists='append', index=False)
 
-   print('Importing qualifying ...')
-   from data import qualifying
-   # define table columns.
-   columns = ['qualifyId', 'raceId', 'driverId', 'constructorId', 'number', 'position', 'q1', 'q2', 'q3']
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(qualifying, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='qualifying', con=engine, if_exists='append', index=False)
+   # print('Importing qualifying ...')
+   # from data import qualifying
+   # # define table columns.
+   # columns = ['qualifyId', 'raceId', 'driverId', 'constructorId', 'number', 'position', 'q1', 'q2', 'q3']
+   # # create the pandas dataframe with column name is provided explicitly
+   # df = pd.DataFrame(qualifying, columns=columns)   
+   # # insert dataframe into database.
+   # df.to_sql(name='qualifying', con=engine, if_exists='append', index=False)
 
-   print('Importing race results ...')
-   from data import results01, results02
-   # define table columns.
-   columns = ['resultId', 'raceId', 'driverId', 'constructorId', 'number', 'grid', 'position', 'positionText', 'positionOrder', 'points', 'laps', 'time', 'milliseconds', 'fastestLap', 'rank', 'fastestLapTime', 'fastestLapSpeed','statusId']
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(results01, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='results', con=engine, if_exists='append', index=False)   
+   # print('Importing race results ...')
+   # from data import results01, results02
+   # # define table columns.
+   # columns = ['resultId', 'raceId', 'driverId', 'constructorId', 'number', 'grid', 'position', 'positionText', 'positionOrder', 'points', 'laps', 'time', 'milliseconds', 'fastestLap', 'rank', 'fastestLapTime', 'fastestLapSpeed','statusId']
+   # # create the pandas dataframe with column name is provided explicitly
+   # df = pd.DataFrame(results01, columns=columns)   
+   # # insert dataframe into database.
+   # df.to_sql(name='results', con=engine, if_exists='append', index=False)   
 
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(results02, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='results', con=engine, if_exists='append', index=False)  
+   # # create the pandas dataframe with column name is provided explicitly
+   # df = pd.DataFrame(results02, columns=columns)   
+   # # insert dataframe into database.
+   # df.to_sql(name='results', con=engine, if_exists='append', index=False)  
 
-   print('Importing sprint results ...')
-   from data import sprintresults
-   # define table columns.
-   columns = ['sprintResultId', 'raceId', 'driverId', 'constructorId', 'number', 'grid', 'position', 'positionText', 'positionOrder', 'points', 'laps', 'time', 'milliseconds', 'fastestLap', 'fastestLapTime', 'statusId']
-   # create the pandas dataframe with column name is provided explicitly
-   df = pd.DataFrame(sprintresults, columns=columns)   
-   # insert dataframe into database.
-   df.to_sql(name='sprintresults', con=engine, if_exists='append', index=False)
+   # print('Importing sprint results ...')
+   # from data import sprintresults
+   # # define table columns.
+   # columns = ['sprintResultId', 'raceId', 'driverId', 'constructorId', 'number', 'grid', 'position', 'positionText', 'positionOrder', 'points', 'laps', 'time', 'milliseconds', 'fastestLap', 'fastestLapTime', 'statusId']
+   # # create the pandas dataframe with column name is provided explicitly
+   # df = pd.DataFrame(sprintresults, columns=columns)   
+   # # insert dataframe into database.
+   # df.to_sql(name='sprintresults', con=engine, if_exists='append', index=False)
 
    # initialize data of lists.
    trackstatus = {'statusId': [1, 2, 3, 4, 5, 6, 7],
@@ -509,11 +520,8 @@ def import_data():
    # close the database connection
    engine.dispose()
    # return to home page.
-   return render_template('settings.html')
+   return redirect(url_for('index'))
 
-# use this method to return to standing page.
-@app.route('/get_qualifying', methods=['GET', 'POST'])
-@csrf.exempt
 def get_qualifying(year, round):
     # generate url. 
    url = f"http://ergast.com/api/f1/{year}/{round}/qualifying.json"
@@ -554,7 +562,7 @@ def get_qualifying(year, round):
    # commit chnages to db. 
    db.session.commit()
 
-def get_constructorStandings(year, round):
+def get_constructor_standings(year, round):
    # generate url. 
    url = f"http://ergast.com/api/f1/{year}/{round}/constructorStandings.json"
    payload={}
@@ -582,6 +590,180 @@ def get_constructorStandings(year, round):
    # commit chnages to db. 
    db.session.commit()
 
+def get_driver_standings(year, round):
+   # generate url. 
+   url = f"http://ergast.com/api/f1/{year}/{round}/driverStandings.json"
+   payload={}
+   headers = {}
+   # send request.
+   response = requests.request("GET", url, headers=headers, data=payload)
+   # parse json.
+   data = json.loads(response.text)
+   # qualifying results as array. 
+   results = data['MRData']['StandingsTable']['StandingsLists'][0]['DriverStandings']
+   # get race id.
+   race_id = get_raceid(year, round)
+   for result in results:
+      # create standing object. 
+      standing = DriverStanding()
+      # set values.          
+      standing.raceId = race_id
+      standing.driverId = get_driverid(result['Driver']['driverId'])
+      standing.points = result['points']
+      standing.position = result['position']
+      standing.positionText = result['positionText']
+      standing.wins = wins = result['wins']
+      # add to db.
+      db.session.add(standing) 
+   # commit chnages to db. 
+   db.session.commit()
+
+def get_results(year, round):
+   # generate url. 
+   url = f"http://ergast.com/api/f1/{year}/{round}/results.json"
+   payload={}
+   headers = {}
+   # send request.
+   response = requests.request("GET", url, headers=headers, data=payload)
+   # parse json.
+   data = json.loads(response.text)
+   # get race id.
+   race_id = get_raceid(year, round)
+   # get race results as array. 
+   results = data['MRData']['RaceTable']['Races'][0]['Results']
+   for result in results:
+      race_result = Result()
+      constructor_result = ConstructorResult()      
+      race_result.raceId = race_id
+      constructor_result.raceId = race_id      
+      race_result.driverId = get_driverid(result['Driver']['driverId'])
+      race_result.constructorId = get_constructorid(result['Constructor']['constructorId'])
+      constructor_result.constructorId = get_constructorid(result['Constructor']['constructorId'])
+      race_result.number = result['number']
+      race_result.grid = result['grid']
+      race_result.position = result['position']
+      race_result.positionText = result['positionText']
+      race_result.positionOrder = result['position']
+      race_result.points = result['points']
+      constructor_result.points = result['points']
+      race_result.laps = result['laps']
+      if 'Time' in result:
+         race_result.time = result['Time']['time']
+         race_result.milliseconds = result['Time']['millis']
+      else:
+         race_result.time = ''
+         race_result.milliseconds = ''        
+      if 'FastestLap' in result:
+         race_result.fastestLap = result['FastestLap']['lap']
+         race_result.rank = result['FastestLap']['rank']
+         race_result.fastestLapTime = result['FastestLap']['Time']['time']
+         race_result.fastestLapSpeed = result['FastestLap']['AverageSpeed']['speed']
+      else:
+         race_result.fastestLap = ''
+         race_result.rank = ''
+         race_result.fastestLapTime = ''
+         race_result.fastestLapSpeed = ''        
+      race_result.statusId = get_statusid(result['status'])
+      constructor_result.statusId = get_statusid(result['status'])
+      # add to db.
+      db.session.add(race_result)
+      db.session.add(constructor_result)  
+   # commit chnages to db. 
+   db.session.commit()
+
+def get_sprint_results(year, round):
+   # generate url. 
+   url = f"http://ergast.com/api/f1/{year}/{round}/sprint.json"
+   payload={}
+   headers = {}
+   # send request.
+   response = requests.request("GET", url, headers=headers, data=payload)
+   # parse json.
+   data = json.loads(response.text)
+   # get race id.
+   race_id = get_raceid(year, round)
+   # get race results as array. 
+   if 'SprintResults' in data:
+      results = data['MRData']['RaceTable']['Races'][0]['SprintResults']
+      for result in results:
+         sprint_result = SprintResult()
+         constructor_result = ConstructorResult()      
+         sprint_result.raceId = race_id
+         constructor_result.raceId = race_id      
+         sprint_result.driverId = get_driverid(result['Driver']['driverId'])
+         sprint_result.constructorId = get_constructorid(result['Constructor']['constructorId'])
+         constructor_result.constructorId = get_constructorid(result['Constructor']['constructorId'])
+         sprint_result.number = result['number']
+         sprint_result.grid = result['grid']
+         sprint_result.position = result['position']
+         sprint_result.positionText = result['positionText']
+         sprint_result.positionOrder = result['position']
+         sprint_result.points = result['points']
+         constructor_result.points = result['points']
+         sprint_result.laps = result['laps']
+         if 'Time' in result:
+            sprint_result.time = result['Time']['time']
+            sprint_result.milliseconds = result['Time']['millis']
+         else:
+            sprint_result.time = ''
+            sprint_result.milliseconds = ''        
+         if 'FastestLap' in result:
+            sprint_result.fastestLap = result['FastestLap']['lap']
+            sprint_result.fastestLapTime = result['FastestLap']['Time']['time']
+         else:
+            sprint_result.fastestLap = ''
+            sprint_result.fastestLapTime = ''       
+         sprint_result.statusId = get_statusid(result['status'])
+         constructor_result.statusId = get_statusid(result['status'])
+         # add to db.
+         db.session.add(sprint_result)
+         db.session.add(constructor_result)  
+      # commit changes to db. 
+      db.session.commit()
+
+def get_pitstops(year, round):
+    length = 30
+    offset = 0
+    while length == 30:
+      # generate url. 
+      url = f"http://ergast.com/api/f1/{year}/{round}/pitstops.json?limit=30&offset={offset}"
+      payload={}
+      headers = {}
+      # send request.
+      response = requests.request("GET", url, headers=headers, data=payload)
+      # parse json.
+      data = json.loads(response.text)
+      # get race results as array. 
+      if 'PitStops' in data:
+         pitstops = data['MRData']['RaceTable']['Races'][0]['PitStops']
+         # get length of the latest response. 
+         length = len(pitstops)    
+         for pit in pitstops:
+            pitstop = PitStop()
+            pitstop.raceId = get_raceid(year, round)
+            pitstop.driverId = get_driverid(pit['driverId'])
+            pitstop.stop = pit['stop']
+            pitstop.lap = pit['lap']
+            pitstop.time = pit['time'] 
+            pitstop.duration = pit['duration']
+            pitstop.milliseconds = remove_colon_and_dot(pit['duration'])
+            # add to db.
+            db.session.add(pitstop)      
+         # increase offset
+         offset += 30
+         # commit changes to db. 
+         db.session.commit()
+      else:
+         length = 0
+
+# api prodives inconsistent format for duration, so use this to convert to milliseconds. 
+def remove_colon_and_dot(input_string):    
+    # replace ':' with an empty string
+    result_string = input_string.replace(':', '')    
+    # replace '.' with an empty string
+    result_string = result_string.replace('.', '')    
+    # return the resulting string
+    return result_string 
 
 # use this method to get race id by year and round. 
 def get_raceid(year, round):
@@ -597,6 +779,11 @@ def get_driverid(driver_ref):
 def get_constructorid(constructor_ref):
    constructor = Constructor.query.where(Constructor.constructorRef == constructor_ref).first()
    return constructor.constructorId
+
+# use this method to get status id from status.
+def get_statusid(status_ref):
+   status = Status.query.where(Status.status == status_ref).first()
+   return status.statusId
 
 if __name__ == '__main__':
    app.run()
