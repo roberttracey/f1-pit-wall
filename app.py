@@ -16,7 +16,7 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from flask_wtf.csrf import CSRFProtect
-from classes import RaceOrder, Simulation
+from classes import RaceOrder, Simulation, LapGraph
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 from sqlalchemy import create_engine, text
 from sqlalchemy import create_engine, Table, Column, Integer, JSON
@@ -28,6 +28,7 @@ import requests
 
 # create default race. 
 simulation = Simulation(0, 0, 830)
+lap_graph = LapGraph(0, '', [])
 
 # check if ff1 cache folder exists.
 ff1_cache = 'fastf1'
@@ -137,6 +138,7 @@ def races():
 @csrf.exempt
 def simulate(race_id):
    # set simulation values.
+   global simulation
    simulation.lap = 1
    simulation.raceId = race_id
    # get new simulation values. 
@@ -159,6 +161,7 @@ def simulate(race_id):
 @csrf.exempt
 def update_race_order():
    # get new simulation values. 
+   global simulation
    lap = simulation.lap
    raceId = simulation.raceId
    # get lap data. 
@@ -172,8 +175,26 @@ def update_race_order():
    print('Updating race order ...', lap) 
    return jsonify(data)
 
+@app.route('/update_lap_graph', methods=['GET', 'POST'])
+@csrf.exempt
+def update_lap_graph():
+   global simulation
+   # get new simulation values. 
+   lap = simulation.lap
+   raceId = simulation.raceId
+   driver = get_driver_code(simulation.driver)
+   # get lap data. 
+   result = Lap.query.where(Lap.raceId == raceId, Lap.lapnumber == lap, Lap.driver == driver).first()
+   # add data to graph object. 
+   lap_graph._lapnumber = result.lapnumber
+   lap_graph._driver = result.driver
+   lap_graph.add_time(format_timedelta(result.laptime))   
+   print('Lap Graph:', lap_graph.as_dict())
+   return jsonify(lap_graph.as_dict())
+
 # use this method during a simulation to get the selected drivers position. 
 def current_position(race_order):
+   global simulation
    # get driverid, 
    driverId = simulation.driver
    # set default position to first. 
@@ -192,6 +213,7 @@ def current_position(race_order):
 @app.route('/update_fastest_laps', methods=['GET', 'POST'])
 @csrf.exempt
 def update_fastest_laps():
+   global simulation
    # get new simulation values. 
    lap = simulation.lap
    raceId = simulation.raceId
@@ -774,6 +796,11 @@ def get_raceid(year, round):
 def get_driverid(driver_ref):
    driver = Driver.query.where(Driver.driverRef == driver_ref).first()
    return driver.driverId
+
+# use this method to get driver id by driver ref.
+def get_driver_code(driverid):
+   driver = Driver.query.where(Driver.driverId == driverid).first()
+   return driver.code
 
 # use this method to get constructor id by constructor ref.
 def get_constructorid(constructor_ref):

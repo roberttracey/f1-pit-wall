@@ -60,3 +60,22 @@ class Simulation:
     # increment Methods
     def incrementLap(self):
         self._lap += 1
+
+class LapGraph:
+    def __init__(self, lapnumber, driver, laptimes):
+        self._lapnumber = lapnumber
+        self._driver = driver
+        self._laptimes = laptimes
+
+    def __str__(self):
+        return f"(lapnumber={self._lapnumber}, driver='{self._driver}', laptimes='{self._laptimes}')"
+    
+    def as_dict(self):
+        return {
+            'lapnumber': self._lapnumber,
+            'driver': self._driver,
+            'laptimes': self._laptimes
+        }
+
+    def add_time(self, laptime):   
+        self._laptimes.append(laptime)
