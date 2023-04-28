@@ -69,6 +69,8 @@ from models import Circuit, ConstructorResult, ConstructorStanding, Race, Season
 
 # use this custoim filter to display timedelta. 
 def format_timedelta(value):  
+    if value == 'NaT':
+       return '00:00.000'
     # convert string value to timedelta. 
     td = pd.to_timedelta(value)
     # calculate huour, minute, seeond and milliseconds.
@@ -76,6 +78,24 @@ def format_timedelta(value):
     minutes, seconds = divmod(remainder, 60)
     milliseconds = td.microseconds // 1000
     return '{:02}:{:02}.{:03}'.format(int(minutes), int(seconds), milliseconds)
+
+def timedelta_to_unix(laptime):
+   td = pd.to_timedelta(laptime)   
+   unix_time = (td - datetime.timedelta(0)).total_seconds()
+   return unix_time
+
+def timedelta_to_seconds(laptime):
+   if laptime == 'NaT':
+       return 0
+   td = pd.to_timedelta(laptime)   
+   return td.total_seconds()
+
+def timedelta_to_milliseconds(laptime):
+   if laptime == 'NaT':
+       return 0
+   td = pd.to_timedelta(laptime)   
+   return td.total_seconds() * 1000
+   
 
 def ordinal(value):
     suffix = 'th' if 11 <= value % 100 <= 13 else {1: 'st', 2: 'nd', 3: 'rd'}.get(value % 10, 'th')
@@ -140,6 +160,8 @@ def simulate(race_id):
    # set simulation values.
    global simulation
    simulation.lap = 1
+   # reset graph
+   lap_graph._laptimes = []
    simulation.raceId = race_id
    # get new simulation values. 
    lap = simulation.lap
@@ -185,11 +207,13 @@ def update_lap_graph():
    driver = get_driver_code(simulation.driver)
    # get lap data. 
    result = Lap.query.where(Lap.raceId == raceId, Lap.lapnumber == lap, Lap.driver == driver).first()
-   # add data to graph object. 
+   # add data to graph object.    
    lap_graph._lapnumber = result.lapnumber
    lap_graph._driver = result.driver
-   lap_graph.add_time(format_timedelta(result.laptime))   
-   print('Lap Graph:', lap_graph.as_dict())
+   lap_graph.add_time(timedelta_to_milliseconds(result.laptime)) 
+   print('Time:', timedelta_to_milliseconds(result.laptime))
+
+   # print('Lap Graph:', lap_graph.as_dict())
    return jsonify(lap_graph.as_dict())
 
 # use this method during a simulation to get the selected drivers position. 
