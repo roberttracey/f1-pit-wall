@@ -153,12 +153,12 @@
                   </thead>
                   <tbody>
                     {% for driver in drivers %}
-                    <tr>
+                    <tr>                        
                       <th scope="row">{{ driver.driverId }}</th>
-                      <td>{{ driver.code }}</td>
-                      <td>{{ driver.forename }}</td>
-                      <td>{{ driver.surname }}</td>
-                      <td>{{ driver.nationality }}</td>
+                      <td><a class="text-dark" href="{{ driver.url }}" target="_blank">{{ driver.code }}</a></td>
+                      <td><a class="text-dark" href="{{ driver.url }}" target="_blank">{{ driver.forename }}</a></td>
+                      <td><a class="text-dark" href="{{ driver.url }}" target="_blank">{{ driver.surname }}</a></td>
+                      <td><a class="text-dark" href="{{ driver.url }}" target="_blank">{{ driver.nationality }}</a></td>            
                     </tr>
                     {% endfor %}
                   </tbody>

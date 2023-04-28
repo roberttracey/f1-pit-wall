@@ -154,9 +154,9 @@
                     {% for team in teams %}
                     <tr>
                       <th scope="row">{{ team.constructorId }}</th>
-                      <td>{{ team.constructorRef }}</td>
-                      <td>{{ team.name }}</td>
-                      <td>{{ team.nationality }}</td>
+                      <td><a class="text-dark" href="{{ team.url }}" target="_blank">{{ team.constructorRef }}</a></td>
+                      <td><a class="text-dark" href="{{ team.url }}" target="_blank">{{ team.name }}</a></td>
+                      <td><a class="text-dark" href="{{ team.url }}" target="_blank">{{ team.nationality }}</a></td>
                     </tr>
                     {% endfor %}
                   </tbody>

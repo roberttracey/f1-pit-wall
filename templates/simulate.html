@@ -245,7 +245,7 @@
                     </ul>
                   </div>  
                   <div class="card-body">
-                    <h5 class="card-title">Laps <span id="graph-lap-no">/Lap No</span></h5>  
+                    <h5 class="card-title">Lap Times <span id="graph-lap-no">| Lap No</span></h5>  
                     <!-- Line Chart -->
                     <div id="reportsChart"></div> 
                     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> 
@@ -317,7 +317,7 @@
                           // use ajax to get data. 
                           $.getJSON(url, function(response) {
                             // update lap number label. 
-                            $("span#graph-lap-no").html('/' + response.lapnumber);
+                            $("span#graph-lap-no").html('| Lap: ' + response.lapnumber);
                             // update chart series. --> https://apexcharts.com/docs/update-charts-from-json-api-ajax/
                             chart.updateSeries([{
                               name: response.driver,

@@ -109,6 +109,7 @@
                 <i class="bi bi-circle"></i>
                 <span>Import Race Data</span>
               </a>
+            </li>
           </ul>
         </li>
         <!-- End Settings Nav -->
@@ -154,9 +155,9 @@
                     {% for race in races %}
                     <tr>
                       <th scope="row">{{ race.round }}</th>
-                      <td>{{ race.date.strftime('%a, %B %d') }}</td>
-                      <td>{{ race.year }}</td>
-                      <td><a href="{{ url_for('simulate', race_id=race.raceId) }}">{{ race.name }}</a></td>                      
+                      <td><a class="text-dark" href="{{ url_for('simulate', race_id=race.raceId) }}">{{ race.date.strftime('%a, %B %d') }}</a></td>   
+                      <td><a class="text-dark" href="{{ url_for('simulate', race_id=race.raceId) }}">{{ race.year }}</a></td>
+                      <td><a class="text-dark" href="{{ url_for('simulate', race_id=race.raceId) }}">{{ race.name }}</a></td>                      
                     </tr>
                     {% endfor %}
                   </tbody>

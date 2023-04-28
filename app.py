@@ -210,10 +210,7 @@ def update_lap_graph():
    # add data to graph object.    
    lap_graph._lapnumber = result.lapnumber
    lap_graph._driver = result.driver
-   lap_graph.add_time(timedelta_to_milliseconds(result.laptime)) 
-   print('Time:', timedelta_to_milliseconds(result.laptime))
-
-   # print('Lap Graph:', lap_graph.as_dict())
+   lap_graph.add_time(timedelta_to_milliseconds(result.laptime))
    return jsonify(lap_graph.as_dict())
 
 # use this method during a simulation to get the selected drivers position. 
