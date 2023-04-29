@@ -280,3 +280,12 @@ class Status(db.Model):
 
     def __str__(self):
         return self.status
+    
+class Preference(db.Model):
+    __tablename__ = 'preference'
+    preferenceId = Column(Integer, primary_key=True, autoincrement=True)
+    driverId = Column(Integer)
+    intervalTime = Column(Integer)
+
+    def __str__(self):
+        return f"(driverId={self.driverId}, intervalTime='{self.intervalTime}')"

@@ -18,7 +18,7 @@ from sqlalchemy import create_engine
 from flask_wtf.csrf import CSRFProtect
 from classes import RaceOrder, Simulation, LapGraph
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text, update
 from sqlalchemy import create_engine, Table, Column, Integer, JSON
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -27,7 +27,7 @@ import requests
 
 
 # create default race. 
-simulation = Simulation(0, 0, 830)
+simulation = Simulation(0, 0, 0, 0)
 lap_graph = LapGraph(0, '', [])
 
 # check if ff1 cache folder exists.
@@ -65,7 +65,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 # import must be done after db initialization due to circular import issue.
-from models import Circuit, ConstructorResult, ConstructorStanding, Race, Season, Constructor, DriverStanding, Driver, PitStop, Qualifying, Result, SprintResult, Status, Lap, TrackStatus
+from models import Circuit, ConstructorResult, ConstructorStanding, Race, Season, Constructor, DriverStanding, Driver, PitStop, Qualifying, Result, SprintResult, Status, Lap, TrackStatus, Preference
 
 # use this custoim filter to display timedelta. 
 def format_timedelta(value):  
@@ -122,20 +122,35 @@ def query_db(query):
 @app.route('/')
 @csrf.exempt
 def index():
+   # get preferences. 
+   preferences = Preference.query.where(Preference.preferenceId == 1).limit(1).first()
+   print('preferences:', preferences)
    # define sql query
    races_query = 'SELECT DISTINCT r.raceid, r.date, r.name FROM laps l, races r WHERE l.raceid = r.raceid ORDER BY r.raceid DESC LIMIT 8;'
    # get data.
    recent_races = query_db(races_query)
+   # define sql query to get valid drivers (i.e. have race laps).
+   driver_query = '''SELECT driverId, forename, surname, code
+                     FROM   drivers
+                     WHERE  code IN (SELECT DISTINCT driver
+                                    FROM   laps); '''
+   # get data.
+   valid_drivers = query_db(driver_query)
+   print('valid_drivers:', valid_drivers)
    # get race count.
    races_count = Lap.query.group_by(Lap.raceId).count()
    # get driver count.
    driver_count = Driver.query.group_by(Driver.driverId).count()
    # get teams count.
    team_count = Constructor.query.group_by(Constructor.constructorId).count()
+   # get last race in laps. 
+   last_lap = Lap.query.order_by(Lap.lapId.desc()).limit(1).first()
+   # get last race based on last lap. 
+   last_race = Race.query.where(Race.raceId == last_lap.raceId).first()
    # print to console. 
    print('Request for index page received')
    # go to index page, and send race data. 
-   return render_template('index.html', recent_races=recent_races, races_count=races_count, driver_count=driver_count, team_count=team_count)
+   return render_template('index.html', recent_races=recent_races, races_count=races_count, driver_count=driver_count, team_count=team_count, valid_drivers=valid_drivers, default_driver=preferences.driverId, default_interval=preferences.intervalTime, last_race=last_race)
 
 
 @app.route('/favicon.ico')
@@ -154,19 +169,42 @@ def races():
    print('Navigate to races.html')
    return render_template('races.html', races=races)
 
+# use this method to set preferences.
+@app.route('/preferences', methods=['GET', 'POST'])
+@csrf.exempt
+def preferences():
+   # get values from form. 
+   driverId = request.form['new_driver']
+   interval = request.form['new_interval']
+   # setup db connection. 
+   engine = create_engine(app.config.get('DATABASE_URI'))
+   Session = sessionmaker(bind=engine)
+   session = Session()
+   pref_to_update = session.query(Preference).filter_by(preferenceId = 1).first()
+   # set new values. 
+   pref_to_update.driverId = driverId
+   pref_to_update.intervalTime = interval
+   session.commit()
+   return redirect(url_for('index'))
+
 @app.route('/simulate/<int:race_id>', methods=['GET', 'POST'])
 @csrf.exempt
 def simulate(race_id):
+   # get preferences. 
+   preferences = Preference.query.where(Preference.preferenceId == 1).limit(1).first()
    # set simulation values.
    global simulation
-   simulation.lap = 1
+   simulation.set_lap(1)
+   simulation.set_driver(preferences.driverId)
+   simulation.set_interval(preferences.intervalTime)   
+   simulation.set_raceId(race_id)
    # reset graph
    lap_graph._laptimes = []
-   simulation.raceId = race_id
    # get new simulation values. 
-   lap = simulation.lap
-   raceId = simulation.raceId
-   driverId = simulation.driver
+   lap = simulation.get_lap()
+   raceId = simulation.get_raceId()
+   driverId = simulation.get_driver()
+   interval = simulation.get_interval()
    # get race information. 
    race = Race.query.where(Race.raceId == race_id).first()
    # get circuit info. 
@@ -176,7 +214,7 @@ def simulate(race_id):
    # get qualifying position. 
    qual_position = Qualifying.query.where(Qualifying.raceId == race_id, Qualifying.driverId == driverId).first()
    print('Starting simulation:', raceId)
-   return render_template('simulate.html', race=race, circuit=circuit, driver=driver, qual_position=qual_position.position)
+   return render_template('simulate.html', race=race, circuit=circuit, driver=driver, qual_position=qual_position.position, interval=interval)
 
 
 @app.route('/update_race_order', methods=['GET', 'POST'])
@@ -184,8 +222,8 @@ def simulate(race_id):
 def update_race_order():
    # get new simulation values. 
    global simulation
-   lap = simulation.lap
-   raceId = simulation.raceId
+   lap = simulation.get_lap()
+   raceId = simulation.get_raceId()
    # get lap data. 
    race_order = Lap.query.where(Lap.raceId == raceId, Lap.lapnumber == lap).order_by(Lap.time).all()    
    # calculate gaps between drivers. 
@@ -202,9 +240,9 @@ def update_race_order():
 def update_lap_graph():
    global simulation
    # get new simulation values. 
-   lap = simulation.lap
-   raceId = simulation.raceId
-   driver = get_driver_code(simulation.driver)
+   lap = simulation.get_lap()
+   raceId = simulation.get_raceId()
+   driver = get_driver_code(simulation.get_driver())
    # get lap data. 
    result = Lap.query.where(Lap.raceId == raceId, Lap.lapnumber == lap, Lap.driver == driver).first()
    # add data to graph object.    
@@ -217,7 +255,7 @@ def update_lap_graph():
 def current_position(race_order):
    global simulation
    # get driverid, 
-   driverId = simulation.driver
+   driverId = simulation.get_driver()
    # set default position to first. 
    pos = 1
    driver_pos = 1
@@ -236,8 +274,8 @@ def current_position(race_order):
 def update_fastest_laps():
    global simulation
    # get new simulation values. 
-   lap = simulation.lap
-   raceId = simulation.raceId
+   lap = simulation.get_lap()
+   raceId = simulation.get_raceId()
    # get fastest laps. 
    fastest_laps = Lap.query.filter(Lap.raceId == raceId, Lap.lapnumber <= lap, Lap.laptime != 'NaT').order_by(Lap.laptime).limit(5).all()    
    # format data for json. 
@@ -512,74 +550,6 @@ def import_data():
    # insert dataframe into database.
    df.to_sql(name='status', con=engine, if_exists='append', index=False)  
 
-   # print('Importing constructor results ...')
-   # from data import constructorresults
-   # # define table columns.
-   # columns = ['constructorResultsId', 'raceId', 'constructorId', 'points', 'status']
-   # # create the pandas dataframe with column name is provided explicitly
-   # df = pd.DataFrame(constructorresults, columns=columns)   
-   # # insert dataframe into database.
-   # df.to_sql(name='constructorresults', con=engine, if_exists='append', index=False)
-
-   # print('Importing constructor standings  ...')
-   # from data import constructorstandings
-   # # define table columns.
-   # columns = ['constructorStandingsId', 'raceId', 'constructorId', 'points', 'position', 'positionText', 'wins']
-   # # create the pandas dataframe with column name is provided explicitly
-   # df = pd.DataFrame(constructorstandings, columns=columns)   
-   # # insert dataframe into database.
-   # df.to_sql(name='constructorstandings', con=engine, if_exists='append', index=False)
-
-   # print('Importing driver standings ...')
-   # from data import driverstandings
-   # # define table columns.
-   # columns = ['driverStandingsId', 'raceId', 'driverId', 'points', 'position', 'positionText', 'wins']
-   # # create the pandas dataframe with column name is provided explicitly
-   # df = pd.DataFrame(driverstandings, columns=columns)   
-   # # insert dataframe into database.
-   # df.to_sql(name='driverstandings', con=engine, if_exists='append', index=False)
-
-   # print('Importing pit stops ...')
-   # from data import pitstops
-   # # define table columns.
-   # columns = ['raceId', 'driverId', 'stop', 'lap', 'time', 'duration', 'milliseconds']
-   # # create the pandas dataframe with column name is provided explicitly
-   # df = pd.DataFrame(pitstops, columns=columns)   
-   # # insert dataframe into database.
-   # df.to_sql(name='pitstops', con=engine, if_exists='append', index=False)
-
-   # print('Importing qualifying ...')
-   # from data import qualifying
-   # # define table columns.
-   # columns = ['qualifyId', 'raceId', 'driverId', 'constructorId', 'number', 'position', 'q1', 'q2', 'q3']
-   # # create the pandas dataframe with column name is provided explicitly
-   # df = pd.DataFrame(qualifying, columns=columns)   
-   # # insert dataframe into database.
-   # df.to_sql(name='qualifying', con=engine, if_exists='append', index=False)
-
-   # print('Importing race results ...')
-   # from data import results01, results02
-   # # define table columns.
-   # columns = ['resultId', 'raceId', 'driverId', 'constructorId', 'number', 'grid', 'position', 'positionText', 'positionOrder', 'points', 'laps', 'time', 'milliseconds', 'fastestLap', 'rank', 'fastestLapTime', 'fastestLapSpeed','statusId']
-   # # create the pandas dataframe with column name is provided explicitly
-   # df = pd.DataFrame(results01, columns=columns)   
-   # # insert dataframe into database.
-   # df.to_sql(name='results', con=engine, if_exists='append', index=False)   
-
-   # # create the pandas dataframe with column name is provided explicitly
-   # df = pd.DataFrame(results02, columns=columns)   
-   # # insert dataframe into database.
-   # df.to_sql(name='results', con=engine, if_exists='append', index=False)  
-
-   # print('Importing sprint results ...')
-   # from data import sprintresults
-   # # define table columns.
-   # columns = ['sprintResultId', 'raceId', 'driverId', 'constructorId', 'number', 'grid', 'position', 'positionText', 'positionOrder', 'points', 'laps', 'time', 'milliseconds', 'fastestLap', 'fastestLapTime', 'statusId']
-   # # create the pandas dataframe with column name is provided explicitly
-   # df = pd.DataFrame(sprintresults, columns=columns)   
-   # # insert dataframe into database.
-   # df.to_sql(name='sprintresults', con=engine, if_exists='append', index=False)
-
    # initialize data of lists.
    trackstatus = {'statusId': [1, 2, 3, 4, 5, 6, 7],
         'status': ['Track Clear', 'Yellow Flag', 'Unused', 'Safety Car', 'Red Flag', 'VSC', 'VSC Ending']}   
@@ -587,6 +557,13 @@ def import_data():
    df = pd.DataFrame(trackstatus)
    # insert dataframe into database.
    df.to_sql(name='trackstatus', con=engine, if_exists='append', index=False)
+
+    # initialize data of lists.
+   preference = { 'driverId': [830], 'intervalTime': [5000] }   
+   # create dataframe
+   df = pd.DataFrame(preference)
+   # insert dataframe into database.
+   df.to_sql(name='preference', con=engine, if_exists='append', index=False)
 
    # close the database connection
    engine.dispose()

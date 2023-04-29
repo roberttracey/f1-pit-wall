@@ -88,31 +88,6 @@
           </a>
         </li>
         <!-- End Standings Nav -->
-
-        <!-- Start Settings Nav -->
-        <li class="nav-item">
-          <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
-            <i class='bi bi-gear'></i>
-            </i>
-            <span>Settings</span>
-            <i class="bi bi-chevron-down ms-auto"></i>
-          </a>
-          <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-            <li>
-              <a href="" data-bs-toggle="modal" data-bs-target="#importhistorialdata">
-                <i class="bi bi-circle"></i>
-                <span>Import Static Data</span>
-              </a>
-            </li>
-            <li>
-              <a href="" data-bs-toggle="modal" data-bs-target="#importlaps">
-                <i class="bi bi-circle"></i>
-                <span>Import Race Data</span>
-              </a>
-          </ul>
-        </li>
-        <!-- End Settings Nav -->
-
       </ul>
     </aside>
     <!-- ======= End Sidebar ======= -->
@@ -145,7 +120,6 @@
                   <thead>
                     <tr>
                       <th scope="col">#</th>
-                      <th scope="col">Ref</th>
                       <th scope="col">Name</th>
                       <th scope="col">Nationality</th>
                     </tr>
@@ -154,7 +128,6 @@
                     {% for team in teams %}
                     <tr>
                       <th scope="row">{{ team.constructorId }}</th>
-                      <td><a class="text-dark" href="{{ team.url }}" target="_blank">{{ team.constructorRef }}</a></td>
                       <td><a class="text-dark" href="{{ team.url }}" target="_blank">{{ team.name }}</a></td>
                       <td><a class="text-dark" href="{{ team.url }}" target="_blank">{{ team.nationality }}</a></td>
                     </tr>
@@ -168,54 +141,8 @@
               </div>
             </div>  
           </div>
-        </div>
-
-        <!-- Start Import Laps Modal -->  
-        <form method="POST" action="{{ url_for('import_laps') }}">           
-          <div class="modal fade" id="importlaps" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title">Import Race Data</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                  Are you sure you want to import more race data? - this process uses the Ergast Developer API & FastF1,and may take some time to complete. 
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                  <button type="submit" class="btn btn-primary">Yes</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </form>   
-        <!-- End Import Laps Modal -->
-
-        <!-- Start Import Historial Data Modal -->  
-        <form method="POST" action="{{ url_for('import_data') }}">           
-          <div class="modal fade" id="importhistorialdata" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title">Import Static Data</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                  Are you sure you want tom import static race data (races, drivers, constructors etc.)?
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                  <button type="submit" class="btn btn-primary">Yes</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </form>   
-        <!-- End Import Historial Data Modal -->
-        
+        </div> 
       </section>
-
     </main>
     <!-- ======= End Main ======= -->
 

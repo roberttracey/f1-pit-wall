@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 3fb18632372a
+Revision ID: 609a2108bf9f
 Revises: 
-Create Date: 2023-04-11 18:58:48.702693
+Create Date: 2023-04-29 15:18:58.648390
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '3fb18632372a'
+revision = '609a2108bf9f'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -50,6 +50,12 @@ def upgrade():
     sa.Column('url', sa.String(length=255), nullable=False),
     sa.PrimaryKeyConstraint('driverId'),
     sa.UniqueConstraint('driverRef')
+    )
+    op.create_table('preference',
+    sa.Column('preferenceId', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('driverId', sa.Integer(), nullable=True),
+    sa.Column('intervalTime', sa.Integer(), nullable=True),
+    sa.PrimaryKeyConstraint('preferenceId')
     )
     op.create_table('seasons',
     sa.Column('year', sa.Integer(), nullable=False),
@@ -248,6 +254,7 @@ def downgrade():
     op.drop_table('trackstatus')
     op.drop_table('status')
     op.drop_table('seasons')
+    op.drop_table('preference')
     op.drop_table('drivers')
     op.drop_table('constructors')
     op.drop_table('circuits')

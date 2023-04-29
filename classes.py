@@ -26,36 +26,38 @@ class RaceOrder:
         }
     
 class Simulation:
-    def __init__(self, lap, raceId, driver):
+    def __init__(self, lap, raceId, driver, interval):
         self._lap = lap
         self._raceId = raceId
         self._driver = driver
+        self._interval = interval
 
     # getters
-    @property
-    def lap(self):
+    def get_lap(self):
         return self._lap
 
-    @property
-    def raceId(self):
+    def get_raceId(self):
         return self._raceId
     
-    @property
-    def driver(self):
+    def get_driver(self):
         return self._driver
+    
+    def get_interval(self):
+        return self._interval
+
 
     # setters
-    @lap.setter
-    def lap(self, value):
+    def set_lap(self, value):
         self._lap = value
 
-    @raceId.setter
-    def raceId(self, value):
+    def set_raceId(self, value):
         self._raceId = value
 
-    @driver.setter
-    def driver(self, value):
+    def set_driver(self, value):
         self._driver = value
+
+    def set_interval(self, value):
+        self._interval = value
 
     # increment Methods
     def incrementLap(self):
