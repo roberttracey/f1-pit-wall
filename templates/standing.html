@@ -118,67 +118,147 @@
     </aside>
     <!-- ======= End Sidebar ======= -->
 
-    <section>
 
-      <!-- Start Import Laps Modal -->  
-      <form method="POST" action="{{ url_for('import_laps') }}">           
-        <div class="modal fade" id="importlaps" tabindex="-1">
-          <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Import Race Data</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body">
-                Are you sure you want to import more race data? - this process uses the Ergast Developer API & FastF1,and may take some time to complete. 
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-primary">Yes</button>
-              </div>
+    <!-- Start Import Laps Modal -->  
+    <form method="POST" action="{{ url_for('import_laps') }}">           
+      <div class="modal fade" id="importlaps" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Import Race Data</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              Are you sure you want to import more race data? - this process uses the Ergast Developer API & FastF1,and may take some time to complete. 
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Yes</button>
             </div>
           </div>
         </div>
-      </form>   
-      <!-- End Import Laps Modal -->
+      </div>
+    </form>   
+    <!-- End Import Laps Modal -->
 
-      <!-- Start Import Historial Data Modal -->  
-      <form method="POST" action="{{ url_for('import_data') }}">           
-        <div class="modal fade" id="importhistorialdata" tabindex="-1">
-          <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Import Static Data</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body">
-                Are you sure you want tom import static race data (races, drivers, constructors etc.)?
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-primary">Yes</button>
-              </div>
+    <!-- Start Import Historial Data Modal -->  
+    <form method="POST" action="{{ url_for('import_data') }}">           
+      <div class="modal fade" id="importhistorialdata" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Import Static Data</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              Are you sure you want tom import static race data (races, drivers, constructors etc.)?
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Yes</button>
             </div>
           </div>
         </div>
-      </form>   
-      <!-- End Import Historial Data Modal -->
+      </div>
+    </form>   
+    <!-- End Import Historial Data Modal -->
       
-    </section>
+ 
 
     <!-- ======= Start Main ======= -->
     <main id="main" class="main">
       <!-- Start Page Title -->
       <div class="pagetitle">
-        <h1>Blank</h1>
+        <h1>Standings</h1>
         <nav>
           <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
-            <li class="breadcrumb-item active">Races</li>
+            <li class="breadcrumb-item active">Standings</li>
           </ol>
         </nav>
       </div>
       <!-- End Page Title -->
+
+      <section class="section">
+        <div class="row col-xl-12">
+          <div class="col-xl-6">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Drivers</h5>  
+                <!-- Start Driver Standing Table -->
+                {% if driver_standings %}
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">First Name</th>
+                      <th scope="col">Last Name</th>
+                      <th scope="col">Wins</th>
+                      <th scope="col">Points</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for driver in driver_standings %}
+                    <tr>
+                      <th scope="row">{{ driver.position }}</th>
+                      <td>{{ driver.forename }}</td>
+                      <td>{{ driver.surname }}</td>   
+                      <td>{{ driver.wins }}</td>   
+                      <td>{{ driver.points }}</td>                         
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+                {% else %}                
+                <p>No driver standings found!</p>
+                {% endif %} 
+                <!-- End Driver Standing Table -->
+              </div>
+            </div>
+
+            
+
+          </div>
+
+          <div class="col-xl-6">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Constructors</h5>  
+                <!-- Start Constructor Standing Table -->
+                {% if constructor_standings %}
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Name</th>
+                      <th scope="col">Nationality</th>
+                      <th scope="col">Wins</th>
+                      <th scope="col">Points</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for constructor in constructor_standings %}
+                    <tr>
+                      <th scope="row">{{ constructor.position }}</th>
+                      <td>{{ constructor.name }}</td>
+                      <td>{{ constructor.nationality }}</td>   
+                      <td>{{ constructor.wins }}</td>   
+                      <td>{{ constructor.points }}</td>                         
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+                {% else %}                
+                <p>No constructor standings found!</p>
+                {% endif %} 
+                <!-- Start Constructor Standing Table -->
+              </div>
+            </div>           
+          </div>
+        </div>
+
+
+      </section>
     </main>
     <!-- ======= End Main ======= -->
 

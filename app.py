@@ -305,7 +305,35 @@ def get_races(year):
 @csrf.exempt
 def standing():
    print('Navigate to standing.html')
-   return render_template('standing.html')
+   # get last race in laps. 
+   last_lap = Lap.query.order_by(Lap.lapId.desc()).limit(1).first()
+   # define sql query
+   driver_query = '''SELECT ds.position,
+                     d.forename,
+                     d.surname,
+                     ds.wins,
+                     ds.points
+               FROM  driverstandings ds
+                     INNER JOIN drivers d
+                        ON ds.driverid = d.driverid
+               WHERE  ds.raceid = {}
+               ORDER  BY position;'''.format(last_lap.raceId)
+   # get data.
+   driver_standings = query_db(driver_query)
+   # define sql query
+   constructor_query = '''SELECT cs.position,
+                                 c.name,
+                                 c.nationality,
+                                 cs.wins,
+                                 cs.points
+                           FROM   constructorstandings cs
+                                 INNER JOIN constructors c
+                                          ON cs.constructorId = c.constructorId
+                           WHERE  cs.raceid = {}
+                           ORDER  BY position;'''.format(last_lap.raceId)
+   # get data.
+   constructor_standings = query_db(constructor_query)
+   return render_template('standing.html', driver_standings=driver_standings, constructor_standings=constructor_standings)
 
 # use this method to return to standing page.
 @app.route('/settings', methods=['GET', 'POST'])
