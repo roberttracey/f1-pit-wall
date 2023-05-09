@@ -177,30 +177,64 @@
               <div class="col-xxl-6 col-md-6">
                 <div class="card info-card attack-card">                     
                   <div class="card-body">
-                    <h5 class="card-title">Attack</h5>  
-                    <div class="d-flex align-items-center">
-                      <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                        <i class="bi bi-graph-up-arrow"></i>
+                    <h5 class="card-title">Attack</h5>
+                    <!-- Start Attack Battle Table -->
+                    <table id="attack-battle-table" class="table table-sm table-borderless" hidden="true">
+                      <thead>
+                      <tr>
+                        <th scope="col">Driver</th>
+                        <th scope="col">S1</th>
+                        <th scope="col">S2</th>
+                        <th scope="col">S3</th>
+                        <th scope="col">Delta</th>
+                        <th scope="col">Gap</th>
+                        <th scope="col">Tyre</th>
+                      </tr>
+                      </thead>
+                      <tbody id="attack-battle-rows">                    
+                      <!-- Rows Automaticcaly Updated Using AJAX -->
+                      </tbody>
+                    </table>
+                    <div id="attack-battle-loading" class="d-flex justify-content-center">
+                      <div class="spinner-border" role="status">
+                      <span class="visually-hidden">Loading...</span>
                       </div>
                     </div>
-                  </div>
-  
+                    <!-- End Attack Battle Table -->                 
+                  </div>  
                 </div>
               </div>
               <!-- End Attack Card -->
   
               <!-- Start Defend Card -->
               <div class="col-xxl-6 col-md-6">
-                <div class="card info-card customers-card">  
+                <div class="card info-card defend-card">                     
                   <div class="card-body">
-                    <h5 class="card-title">Defend </h5>  
-                    <div class="d-flex align-items-center">
-                      <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                        <i class="bi bi-graph-down-arrow"></i>
+                    <h5 class="card-title">Defence</h5>
+                    <!-- Start Attack Battle Table -->
+                    <table id="defence-battle-table" class="table table-sm table-borderless" hidden="true">
+                      <thead>
+                      <tr>
+                        <th scope="col">Driver</th>
+                        <th scope="col">S1</th>
+                        <th scope="col">S2</th>
+                        <th scope="col">S3</th>
+                        <th scope="col">Delta</th>
+                        <th scope="col">Gap</th>
+                        <th scope="col">Tyre</th>
+                      </tr>
+                      </thead>
+                      <tbody id="defence-battle-rows">                    
+                      <!-- Rows Automaticcaly Updated Using AJAX -->
+                      </tbody>
+                    </table>
+                    <div id="defence-battle-loading" class="d-flex justify-content-center">
+                      <div class="spinner-border" role="status">
+                      <span class="visually-hidden">Loading...</span>
                       </div>
                     </div>
-                  </div>
-  
+                    <!-- End Attack Battle Table -->                 
+                  </div>  
                 </div>
               </div>
               <!-- End Defend Card -->
@@ -319,38 +353,7 @@
           <div class="col-lg-4">
             <div class="card">                
               <div class="card-body">
-                <h5 id="race-order-title" class="card-title">Race Order <span>| Lap</span></h5>  
-                <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-                <script>
-                  $(document).ready(function() {
-                    setInterval(function() {
-                      $.ajax({
-                        url: "{{ url_for('update_race_order') }}",
-                        success: function(data) {
-                          var html = "";
-                          var pos = 1;
-                          var driverId = '{{ driver.code }}';
-                          var title = "Race Order <span> | Lap: " + data[0].lapnumber + "</span>"
-                          $.each(data, function(key, value) {
-                            if (value.lapnumber % 4 === 0) {
-                              html += "<tr><td>" + pos + "</td><td>" + value.driver + "</td><td>" + value.compound + " (" + value.tyrelife + ")</td><td>" + value.behind + "</td></tr>";
-                              } else {
-                                html += "<tr><td>" + pos + "</td><td>" + value.driver + "</td><td>" + value.compound + " (" + value.tyrelife + ")</td><td>" + value.gap + "</td></tr>";
-                              }    
-                              if (value.driver === driverId) {
-                                $("h6#driver-position").html(getOrdinalNum(pos));
-                              }
-                            pos++;
-                          });
-                          $("tbody#race-order-table").html(html);
-                          $("h5#race-order-title").html(title);
-                          removeElement("race-order-loading");
-                        }
-                      });
-                    }, intervalTime);
-                  });
-                </script>
-
+                <h5 id="race-order-title" class="card-title">Race Order <span>| Lap</span></h5>
                 <!-- Start Race Order Table -->
                 <table class="table table-sm table-hover">
                   <thead>
@@ -378,30 +381,7 @@
             <!-- Start Fastest Laps -->
             <div class="card">                
               <div class="card-body">
-                <h5 id="fastest-laps-title" class="card-title">Fastest Laps <span>| Fastest</span></h5>  
-
-                  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-                  <script>
-                    $(document).ready(function() {
-                      setInterval(function() {
-                        $.ajax({
-                          url: "{{ url_for('update_fastest_laps') }}",
-                          success: function(data) {
-                            var html = "";
-                            var pos = 1;
-                            var title = "Fastest Laps <span> | Fastest: " + data[0].driver + "</span>"
-                            $.each(data, function(key, value) {
-                              html += "<tr><td>" + pos + "</td><td>" + value.driver + "</td><td>" + formatTimeDelta(value.laptime) + "</td></tr>";
-                              pos++;
-                            });
-                            $("tbody#fastest-laps-table").html(html);
-                            $("h5#fastest-laps-title").html(title);
-                            removeElement("fastest-lap-loading");
-                          }
-                        });
-                      }, intervalTime);
-                    });
-                  </script> 
+                <h5 id="fastest-laps-title" class="card-title">Fastest Laps <span>| Fastest</span></h5>                 
                     <!-- Start Race Order Table -->
                     <table class="table table-sm table-hover">
                       <thead>
@@ -429,7 +409,117 @@
         </div>        
       </section>
 
-      <script>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+      <script>  
+        // use this method to get the current race order. 
+        $(document).ready(function() {
+          setInterval(function() {
+            $.ajax({
+              url: "{{ url_for('update_race_order') }}",
+              success: function(data) {
+                var html = "";
+                var pos = 1;
+                var driverId = '{{ driver.code }}';
+                var title = "Race Order <span> | Lap: " + data[0].lapnumber + "</span>"
+                $.each(data, function(key, value) {
+                  if (value.lapnumber % 4 === 0) {
+                    html += "<tr><td>" + pos + "</td><td>" + value.driver + "</td><td>" + value.compound + " (" + value.tyrelife + ")</td><td>" + value.behind + "</td></tr>";
+                    } else {
+                      html += "<tr><td>" + pos + "</td><td>" + value.driver + "</td><td>" + value.compound + " (" + value.tyrelife + ")</td><td>" + value.gap + "</td></tr>";
+                    }    
+                    if (value.driver === driverId) {
+                      $("h6#driver-position").html(getOrdinalNum(pos));
+                    }
+                  pos++;
+                });
+                $("tbody#race-order-table").html(html);
+                $("h5#race-order-title").html(title);
+                removeElement("race-order-loading");
+              }
+            });
+          }, intervalTime);
+        });
+                
+        // use this method to get the current fastest laps. 
+        $(document).ready(function() {
+          setInterval(function() {
+            $.ajax({
+              url: "{{ url_for('update_fastest_laps') }}",
+              success: function(data) {
+                var html = "";
+                var pos = 1;
+                var title = "Fastest Laps <span> | Fastest: " + data[0].driver + "</span>"
+                $.each(data, function(key, value) {
+                  html += "<tr><td>" + pos + "</td><td>" + value.driver + "</td><td>" + formatTimeDelta(value.laptime) + "</td></tr>";
+                  pos++;
+                });
+                $("tbody#fastest-laps-table").html(html);
+                $("h5#fastest-laps-title").html(title);
+                removeElement("fastest-lap-loading");
+              }
+            });
+          }, intervalTime);
+        }); 
+
+        // use this method to get a drivers attack battle. 
+        $(document).ready(function() {
+          setInterval(function() {
+            $.ajax({
+              url: "{{ url_for('attack_battle') }}",
+              success: function(data) {
+                var html = '';
+                $.each(data, function(key, value) {
+                  html += '<tr>' + 
+                            '<td>' + value.driver + '</td>' + 
+                            '<td>' + value.s1Delta + '</td>' + 
+                            '<td>' + value.s2Delta + '</td>' + 
+                            '<td>' + value.s3Delta + '</td>' + 
+                            '<td>' + value.lapDelta + '</td>' + 
+                            '<td>' + value.gap + '</td>' + 
+                            '<td>' + value.compound.charAt(0).toUpperCase() + ' (' + value.tyrelife + ')</td>' + 
+                          '</tr>';
+                });
+                // set table rows. 
+                $("tbody#attack-battle-rows").html(html);
+                // remove loading icon. 
+                removeElement("attack-battle-loading");
+                // show table.
+                $('#attack-battle-table').attr('hidden', false);
+              }
+            });
+          }, intervalTime);
+        }); 
+
+        // use this method to get a drivers defence battle. 
+        $(document).ready(function() {
+          setInterval(function() {
+            $.ajax({
+              url: "{{ url_for('defence_battle') }}",
+              success: function(data) {
+                console.log(data);
+                var html = '';
+                $.each(data, function(key, value) {
+                  html += '<tr>' + 
+                            '<td>' + value.driver + '</td>' + 
+                            '<td>' + value.s1Delta + '</td>' + 
+                            '<td>' + value.s2Delta + '</td>' + 
+                            '<td>' + value.s3Delta + '</td>' + 
+                            '<td>' + value.lapDelta + '</td>' + 
+                            '<td>' + value.gap + '</td>' + 
+                            '<td>' + value.compound.charAt(0).toUpperCase() + ' (' + value.tyrelife + ')</td>' + 
+                          '</tr>';
+                });
+                // set table rows. 
+                $("tbody#defence-battle-rows").html(html);
+                // remove loading icon. 
+                removeElement("defence-battle-loading");
+                // show table.
+                $('#defence-battle-table').attr('hidden', false);
+              }
+            });
+          }, intervalTime);
+        }); 
+
         function formatTimeDelta(delta) {
           var td = parseTimeDelta(delta);
           var totalSeconds = Math.abs(td / 1000);
@@ -466,9 +556,6 @@
       }
 
       function getOrdinalNum(n) {
-        if (isNaN(n) || !isFinite(n)) {
-          return n;
-        }
         var s=["th","st","nd","rd"],
             v=n%100;
         return n+(s[(v-20)%10]||s[v]||s[0]);

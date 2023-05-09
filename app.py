@@ -14,17 +14,13 @@ from datetime import datetime
 from flask import Flask, redirect, render_template, request, send_from_directory, url_for, jsonify
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import create_engine
 from flask_wtf.csrf import CSRFProtect
-from classes import RaceOrder, Simulation, LapGraph
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
-from sqlalchemy import create_engine, text, update
-from sqlalchemy import create_engine, Table, Column, Integer, JSON
+from classes import RaceOrder, Simulation, LapGraph, Battle
+from sqlalchemy import create_engine, Integer, String, ForeignKey, text, update, Table, Column, JSON
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import json
 import requests
-
 
 # create default race. 
 simulation = Simulation(0, 0, 0, 0)
@@ -69,15 +65,15 @@ from models import Circuit, ConstructorResult, ConstructorStanding, Race, Season
 
 # use this custoim filter to display timedelta. 
 def format_timedelta(value):  
-    if value == 'NaT':
-       return '00:00.000'
-    # convert string value to timedelta. 
-    td = pd.to_timedelta(value)
-    # calculate huour, minute, seeond and milliseconds.
-    hours, remainder = divmod(td.total_seconds(), 3600)
-    minutes, seconds = divmod(remainder, 60)
-    milliseconds = td.microseconds // 1000
-    return '{:02}:{:02}.{:03}'.format(int(minutes), int(seconds), milliseconds)
+   if value == 'NaT':
+      return '00:00.000'
+   # convert string value to timedelta. 
+   td = pd.to_timedelta(value)
+   # calculate huour, minute, seeond and milliseconds.
+   hours, remainder = divmod(td.total_seconds(), 3600)
+   minutes, seconds = divmod(remainder, 60)
+   milliseconds = td.microseconds // 1000
+   return '{:02}:{:02}.{:03}'.format(int(minutes), int(seconds), milliseconds)
 
 def timedelta_to_unix(laptime):
    td = pd.to_timedelta(laptime)   
@@ -96,7 +92,6 @@ def timedelta_to_milliseconds(laptime):
    td = pd.to_timedelta(laptime)   
    return td.total_seconds() * 1000
    
-
 def ordinal(value):
     suffix = 'th' if 11 <= value % 100 <= 13 else {1: 'st', 2: 'nd', 3: 'rd'}.get(value % 10, 'th')
     return f'{value}{suffix}'
@@ -164,10 +159,121 @@ def favicon():
 @csrf.exempt
 def races():
    # get races from db
-   # races = Race.query.where(Race.year == 2023).all()
    races = Race.query.where(Race.year >= 2019).all()
    print('Navigate to races.html')
    return render_template('races.html', races=races)
+
+# use this method to go get the drivers attack battles. 
+@app.route('/attack_battle', methods=['GET', 'POST'])
+@csrf.exempt
+def attack_battle():
+   # create array to store battle data. 
+   battles = []
+   # get current race order. 
+   race_order = Lap.query.where(Lap.raceId == simulation.get_raceId(), Lap.lapnumber == simulation.get_lap()).order_by(Lap.time).all()   
+   # get current drivers position. 
+   current_position = position(race_order)
+   s1Time = race_order[current_position - 1].sector1time
+   s2Time = race_order[current_position - 1].sector2time
+   s3Time = race_order[current_position - 1].sector3time
+   lapTime = race_order[current_position - 1].laptime
+   time = race_order[current_position - 1].time
+   # calculate start and end. 
+   start = 0
+   end = 0 
+   if (current_position == 3):
+      start = 0
+      end = 2
+   elif (current_position == 2):
+      start = 0
+      end = 1
+   else:
+      start = current_position - 4
+      end = current_position - 1
+   # select the relevant lap data. 
+   data = race_order[start:end]
+   # loop data. 
+   for lap in data:
+      # create a battle object.
+      battle = Battle(lap.driver, format_timedelta_s_m(timedelta_difference(s1Time, lap.sector1time)), format_timedelta_s_m(timedelta_difference(s2Time, lap.sector2time)),
+              format_timedelta_s_m(timedelta_difference(s3Time, lap.sector3time)), format_timedelta_s_m(timedelta_difference(lapTime, lap.laptime)), 
+               format_timedelta(timedelta_difference(time, lap.time)), lap.compound, lap.tyrelife, 0)
+      battles.append(battle)
+   # convert to json. 
+   battles = [row.as_dict() for row in battles]
+   return jsonify(battles)
+
+# use this method to go get the drivers defence battles. 
+@app.route('/defence_battle', methods=['GET', 'POST'])
+@csrf.exempt
+def defence_battle():   
+   # create array to store battle data. 
+   battles = []
+   # get current race order. 
+   race_order = Lap.query.where(Lap.raceId == simulation.get_raceId(), Lap.lapnumber == simulation.get_lap()).order_by(Lap.time).all()   
+   # get current drivers position. 
+   current_position = position(race_order)
+   s1Time = race_order[current_position - 1].sector1time
+   s2Time = race_order[current_position - 1].sector2time
+   s3Time = race_order[current_position - 1].sector3time
+   lapTime = race_order[current_position - 1].laptime
+   time = race_order[current_position - 1].time   
+   # select the relevant lap data. 
+   data = race_order[current_position:current_position + 3]  
+   # loop data. 
+   for lap in data:
+      # create a battle object.
+      battle = Battle(lap.driver, format_timedelta_s_m(timedelta_difference(s1Time, lap.sector1time)), format_timedelta_s_m(timedelta_difference(s2Time, lap.sector2time)),
+              format_timedelta_s_m(timedelta_difference(s3Time, lap.sector3time)), format_timedelta_s_m(timedelta_difference(lapTime, lap.laptime)), 
+               format_timedelta(timedelta_difference(lap.time, time)), lap.compound, lap.tyrelife, 0)
+      battles.append(battle)
+   # convert to json. 
+   battles = [row.as_dict() for row in battles]
+   return jsonify(battles)
+
+# use this method to calculate the difference between two timedeltas. 
+def timedelta_difference(timedelta1, timedelta2):
+    # check if values are null. 
+    if timedelta1 == 'NaT' or timedelta2 == 'NaT':
+      return 0
+    # convert string values from db to timedelta. 
+    td1 = pd.to_timedelta(timedelta1)
+    td2 = pd.to_timedelta(timedelta2)   
+    # calculate the difference.  
+    difference = td1 - td2
+    return difference
+
+# use this method to display as milliseconds for sector delta.  
+def format_timedelta_s_m(timedelta):
+   # check if value is null. 
+   if timedelta == 'NaT':
+      return 0
+   # convert to timedelta. 
+   td = pd.to_timedelta(timedelta)  
+   # calculate seconds and milliseconds.
+   seconds = td.total_seconds()
+   milliseconds = int((seconds - int(seconds)) * 1000)
+   # format as '00:123' or '123'.
+   if int(seconds) > 0:
+      formatted_time = '{:02d}:{:03d}'.format(int(seconds), milliseconds)
+   else:
+      formatted_time = '{:03d}'.format(milliseconds)
+   return formatted_time
+
+# use this method to get the current drivers position from lap data. 
+def position(laps):
+   # start at first. 
+   pos = 1
+   # loop laps to find current driver. 
+   for lap in laps:
+      # test driver but switch id for code. 
+      if lap.driver == get_driver_code(simulation.get_driver()):
+         # return current position. 
+         return pos
+      else:
+         # increment position. 
+         pos += 1
+   return 0
 
 # use this method to set preferences.
 @app.route('/preferences', methods=['GET', 'POST'])
@@ -215,7 +321,6 @@ def simulate(race_id):
    qual_position = Qualifying.query.where(Qualifying.raceId == race_id, Qualifying.driverId == driverId).first()
    print('Starting simulation:', raceId)
    return render_template('simulate.html', race=race, circuit=circuit, driver=driver, qual_position=qual_position.position, interval=interval)
-
 
 @app.route('/update_race_order', methods=['GET', 'POST'])
 @csrf.exempt

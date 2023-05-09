@@ -81,3 +81,31 @@ class LapGraph:
 
     def add_time(self, laptime):   
         self._laptimes.append(laptime)
+
+class Battle:
+    def __init__(self, driver, s1Delta, s2Delta, s3Delta, lapDelta, gap, compound, tyrelife, likelihood):
+        self._driver = driver
+        self._s1Delta = s1Delta
+        self._s2Delta = s2Delta
+        self._s3Delta = s3Delta
+        self._lapDelta = lapDelta
+        self._gap = gap
+        self._compound = compound
+        self._tyrelife = tyrelife
+        self._likelihood = likelihood
+
+    def __str__(self):
+        return f"(driver={self._driver}, s1Delta='{self._s1Delta}', s2Delta='{self._s2Delta}', s3Delta='{self._s3Delta}', lapDelta='{self._lapDelta}', gap='{self._gap}', compound='{self._compound}', tyrelife='{self._tyrelife}', likelihood='{self._likelihood}')"
+    
+    def as_dict(self):
+        return {
+            'driver': self._driver,
+            's1Delta': self._s1Delta,
+            's2Delta': self._s2Delta,
+            's3Delta': self._s3Delta,
+            'lapDelta': self._lapDelta,
+            'gap': self._gap,
+            'compound': self._compound,
+            'tyrelife': self._tyrelife,
+            'likelihood': self._likelihood
+        }
