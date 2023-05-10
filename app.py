@@ -167,6 +167,7 @@ def races():
 @app.route('/attack_battle', methods=['GET', 'POST'])
 @csrf.exempt
 def attack_battle():
+   print('Attack:', simulation.get_lap())
    # create array to store battle data. 
    battles = []
    # get current race order. 
@@ -194,10 +195,17 @@ def attack_battle():
    data = race_order[start:end]
    # loop data. 
    for lap in data:
+      # get gap between drivers. 
+      gap = pd.to_timedelta(timedelta_difference(time, lap.time))
+      # initiate variable for drs, and default to no. 
+      drs = 'N'
+      # check if driver in within one second and could have drs. 
+      if gap.total_seconds() < 1:
+         drs = 'Y'
       # create a battle object.
       battle = Battle(lap.driver, format_timedelta_s_m(timedelta_difference(s1Time, lap.sector1time)), format_timedelta_s_m(timedelta_difference(s2Time, lap.sector2time)),
               format_timedelta_s_m(timedelta_difference(s3Time, lap.sector3time)), format_timedelta_s_m(timedelta_difference(lapTime, lap.laptime)), 
-               format_timedelta(timedelta_difference(time, lap.time)), lap.compound, lap.tyrelife, 0)
+               format_timedelta(gap), lap.compound, lap.tyrelife, drs)
       battles.append(battle)
    # convert to json. 
    battles = [row.as_dict() for row in battles]
@@ -207,6 +215,8 @@ def attack_battle():
 @app.route('/defence_battle', methods=['GET', 'POST'])
 @csrf.exempt
 def defence_battle():   
+   global simulation
+   print('Defence:', simulation.get_lap())
    # create array to store battle data. 
    battles = []
    # get current race order. 
@@ -222,13 +232,22 @@ def defence_battle():
    data = race_order[current_position:current_position + 3]  
    # loop data. 
    for lap in data:
+      # get gap between drivers. 
+      gap = pd.to_timedelta(timedelta_difference(lap.time, time))
+      # initiate variable for drs, and default to no. 
+      drs = 'N'
+      # check if driver in within one second and could have drs. 
+      if gap.total_seconds() < 1:
+         drs = 'Y'
       # create a battle object.
       battle = Battle(lap.driver, format_timedelta_s_m(timedelta_difference(s1Time, lap.sector1time)), format_timedelta_s_m(timedelta_difference(s2Time, lap.sector2time)),
               format_timedelta_s_m(timedelta_difference(s3Time, lap.sector3time)), format_timedelta_s_m(timedelta_difference(lapTime, lap.laptime)), 
-               format_timedelta(timedelta_difference(lap.time, time)), lap.compound, lap.tyrelife, 0)
+                format_timedelta(gap), lap.compound, lap.tyrelife, drs)
       battles.append(battle)
    # convert to json. 
-   battles = [row.as_dict() for row in battles]
+   battles = [row.as_dict() for row in battles]   
+   # increment lap number. 
+   simulation.incrementLap()
    return jsonify(battles)
 
 # use this method to calculate the difference between two timedeltas. 
@@ -324,9 +343,10 @@ def simulate(race_id):
 
 @app.route('/update_race_order', methods=['GET', 'POST'])
 @csrf.exempt
-def update_race_order():
+def update_race_order():   
    # get new simulation values. 
    global simulation
+   print('Order:', simulation.get_lap())
    lap = simulation.get_lap()
    raceId = simulation.get_raceId()
    # get lap data. 
@@ -335,15 +355,13 @@ def update_race_order():
    data = calculate_interval(race_order.copy())
    # format data for json. 
    data = [row.as_dict() for row in data]
-   # increment lap number. 
-   simulation.incrementLap()
-   print('Updating race order ...', lap) 
    return jsonify(data)
 
 @app.route('/update_lap_graph', methods=['GET', 'POST'])
 @csrf.exempt
-def update_lap_graph():
+def update_lap_graph():   
    global simulation
+   print('Graph:', simulation.get_lap())
    # get new simulation values. 
    lap = simulation.get_lap()
    raceId = simulation.get_raceId()
@@ -376,8 +394,9 @@ def current_position(race_order):
 
 @app.route('/update_fastest_laps', methods=['GET', 'POST'])
 @csrf.exempt
-def update_fastest_laps():
+def update_fastest_laps():   
    global simulation
+   print('Fastest Laps:', simulation.get_lap())
    # get new simulation values. 
    lap = simulation.get_lap()
    raceId = simulation.get_raceId()
@@ -385,7 +404,6 @@ def update_fastest_laps():
    fastest_laps = Lap.query.filter(Lap.raceId == raceId, Lap.lapnumber <= lap, Lap.laptime != 'NaT').order_by(Lap.laptime).limit(5).all()    
    # format data for json. 
    fastest_laps = [row.as_dict() for row in fastest_laps]
-   print('Updating fastest laps ...', lap) 
    return jsonify(fastest_laps)
 
 def format_gap(td):

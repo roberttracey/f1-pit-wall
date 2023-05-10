@@ -51,7 +51,7 @@
             <i class="bi bi-house-door"></i>
             <span>Home</span>
           </a>
-        </li>
+        </li>      
         <!-- End Home Nav -->
 
         <!-- Start Races Nav -->
@@ -101,7 +101,7 @@
         <nav>
           <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
-            <li class="breadcrumb-item active">Simulate</li>
+            <li id="countdown"class="breadcrumb-item active">Simulate</li>
           </ol>
         </nav>
       </div>
@@ -187,6 +187,7 @@
                         <th scope="col">S2</th>
                         <th scope="col">S3</th>
                         <th scope="col">Delta</th>
+                        <th scope="col">DRS</th>
                         <th scope="col">Gap</th>
                         <th scope="col">Tyre</th>
                       </tr>
@@ -220,6 +221,7 @@
                         <th scope="col">S2</th>
                         <th scope="col">S3</th>
                         <th scope="col">Delta</th>
+                        <th scope="col">DRS</th>
                         <th scope="col">Gap</th>
                         <th scope="col">Tyre</th>
                       </tr>
@@ -411,6 +413,23 @@
 
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
       <script>  
+
+        // set the countdown duration in seconds.
+        var duration = intervalTime / 1000;
+        // get the countdown element.
+        var countdownElement = document.getElementById('countdown');
+        // update the countdown every second.
+        var countdown = setInterval(function() {
+          // reduce the duration by 1 second.
+          duration--;  
+          // update the timer.
+          countdownElement.textContent = 'Simulate (' + duration + ')';                  
+          // rest the countdown when it reaches 0.
+          if (duration == 0) {            
+            duration += intervalTime / 1000;           
+          }        
+        }, 1000);
+
         // use this method to get the current race order. 
         $(document).ready(function() {
           setInterval(function() {
@@ -475,6 +494,7 @@
                             '<td>' + value.s2Delta + '</td>' + 
                             '<td>' + value.s3Delta + '</td>' + 
                             '<td>' + value.lapDelta + '</td>' + 
+                            '<td>' + value.drs + '</td>' + 
                             '<td>' + value.gap + '</td>' + 
                             '<td>' + value.compound.charAt(0).toUpperCase() + ' (' + value.tyrelife + ')</td>' + 
                           '</tr>';
@@ -496,7 +516,6 @@
             $.ajax({
               url: "{{ url_for('defence_battle') }}",
               success: function(data) {
-                console.log(data);
                 var html = '';
                 $.each(data, function(key, value) {
                   html += '<tr>' + 
@@ -505,6 +524,7 @@
                             '<td>' + value.s2Delta + '</td>' + 
                             '<td>' + value.s3Delta + '</td>' + 
                             '<td>' + value.lapDelta + '</td>' + 
+                            '<td>' + value.drs + '</td>' + 
                             '<td>' + value.gap + '</td>' + 
                             '<td>' + value.compound.charAt(0).toUpperCase() + ' (' + value.tyrelife + ')</td>' + 
                           '</tr>';
@@ -554,11 +574,19 @@
           element.remove();
         }
       }
-
+      
+      // use this method to get the ordinal number. 
       function getOrdinalNum(n) {
-        var s=["th","st","nd","rd"],
-            v=n%100;
-        return n+(s[(v-20)%10]||s[v]||s[0]);
+        // only works for 1-20 range. 
+        if (n == 1) {
+            return n + 'st';
+        } else if (n == 2) {
+            return n + 'nd';
+        } else if (n == 3) {
+            return n + 'rd';
+        } else {
+            return n + 'th';
+        }
       }
 
       </script>

@@ -83,7 +83,7 @@ class LapGraph:
         self._laptimes.append(laptime)
 
 class Battle:
-    def __init__(self, driver, s1Delta, s2Delta, s3Delta, lapDelta, gap, compound, tyrelife, likelihood):
+    def __init__(self, driver, s1Delta, s2Delta, s3Delta, lapDelta, gap, compound, tyrelife, drs):
         self._driver = driver
         self._s1Delta = s1Delta
         self._s2Delta = s2Delta
@@ -92,10 +92,10 @@ class Battle:
         self._gap = gap
         self._compound = compound
         self._tyrelife = tyrelife
-        self._likelihood = likelihood
+        self._drs = drs
 
     def __str__(self):
-        return f"(driver={self._driver}, s1Delta='{self._s1Delta}', s2Delta='{self._s2Delta}', s3Delta='{self._s3Delta}', lapDelta='{self._lapDelta}', gap='{self._gap}', compound='{self._compound}', tyrelife='{self._tyrelife}', likelihood='{self._likelihood}')"
+        return f"(driver={self._driver}, s1Delta='{self._s1Delta}', s2Delta='{self._s2Delta}', s3Delta='{self._s3Delta}', lapDelta='{self._lapDelta}', gap='{self._gap}', compound='{self._compound}', tyrelife='{self._tyrelife}', drs='{self._drs}')"
     
     def as_dict(self):
         return {
@@ -107,5 +107,5 @@ class Battle:
             'gap': self._gap,
             'compound': self._compound,
             'tyrelife': self._tyrelife,
-            'likelihood': self._likelihood
+            'drs': self._drs
         }
