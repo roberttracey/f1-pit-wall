@@ -135,6 +135,9 @@ class Lap(db.Model):
             'team': self.team,
             'compound': self.compound,
             'laptime': self.laptime,
+            'sector1time': self.sector1time,
+            'sector2time': self.sector2time,
+            'sector3time': self.sector3time,
             'time': self.time
         }
     

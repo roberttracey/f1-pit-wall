@@ -108,12 +108,11 @@
       <!-- End Page Title -->
 
       <section id="simulate" data-variable="{{ interval }}" class="section dashboard">
-        <div class="row">
-  
+        <div class="row">  
           <!-- Left side columns -->
           <div class="col-lg-8">
             <div class="row">
-  
+
               <!-- Start Driver Card -->
               <div class="col-xxl-4 col-md-6">
                 <div class="card info-card sales-card">                     
@@ -346,7 +345,94 @@
                   </div>  
                 </div>
               </div>    
-              <!-- End Laps Graph -->          
+              <!-- End Laps Graph -->  
+              
+              <!-- Start Fastest Sector 1 -->
+              <div class="col-xxl-4 col-md-6">    
+                <div class="card info-card">
+                  <div class="card-body">
+                    <h5 id="fastest-sector-01-title" class="card-title">Sector 1 <span>| Fastest</span></h5>                 
+                        <!-- Start Fastest Sector 1 Table -->
+                        <table class="table table-sm table-hover">
+                          <thead>
+                            <tr>
+                              <th scope="col">#</th>
+                              <th scope="col">Driver</th>
+                              <th scope="col">Time</th>
+                            </tr>
+                          </thead>
+                          <tbody id="fastest-sector-01-table"> 
+                            <!-- Rows Automaticcaly Updated Using AJAX -->              
+                          </tbody>
+                        </table>
+                        <div id="fastest-sector-01-loading" class="d-flex justify-content-center">
+                          <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                          </div>
+                        </div>
+                        <!-- End Fastest Sector 1 Table --> 
+                  </div> 
+                </div>                  
+              </div>
+              <!-- End Fastest Sector 1 -->  
+              
+              <!-- Start Fastest Sector 2 -->
+              <div class="col-xxl-4 col-md-6">    
+                <div class="card info-card">
+                  <div class="card-body">
+                    <h5 id="fastest-sector-02-title" class="card-title">Sector 2 <span>| Fastest</span></h5>                 
+                        <!-- Start Fastest Sector 2 Table -->
+                        <table class="table table-sm table-hover">
+                          <thead>
+                            <tr>
+                              <th scope="col">#</th>
+                              <th scope="col">Driver</th>
+                              <th scope="col">Time</th>
+                            </tr>
+                          </thead>
+                          <tbody id="fastest-sector-02-table"> 
+                            <!-- Rows Automaticcaly Updated Using AJAX -->              
+                          </tbody>
+                        </table>
+                        <div id="fastest-sector-02-loading" class="d-flex justify-content-center">
+                          <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                          </div>
+                        </div>
+                        <!-- End Fastest Sector 2 Table --> 
+                  </div> 
+                </div>                  
+              </div>
+              <!-- End Fastest Sector 2 -->  
+
+              <!-- Start Fastest Sector 3 -->
+              <div class="col-xxl-4 col-md-6">    
+                <div class="card info-card">
+                  <div class="card-body">
+                    <h5 id="fastest-sector-03-title" class="card-title">Sector 3 <span>| Fastest</span></h5>                 
+                        <!-- Start Fastest Sector 3 Table -->
+                        <table class="table table-sm table-hover">
+                          <thead>
+                            <tr>
+                              <th scope="col">#</th>
+                              <th scope="col">Driver</th>
+                              <th scope="col">Time</th>
+                            </tr>
+                          </thead>
+                          <tbody id="fastest-sector-03-table"> 
+                            <!-- Rows Automaticcaly Updated Using AJAX -->              
+                          </tbody>
+                        </table>
+                        <div id="fastest-sector-03-loading" class="d-flex justify-content-center">
+                          <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                          </div>
+                        </div>
+                        <!-- End Fastest Sector 3 Table --> 
+                  </div> 
+                </div>                  
+              </div>
+              <!-- End Fastest Sector 3 -->           
             </div>
           </div>
           <!-- End Left side columns -->
@@ -384,7 +470,7 @@
             <div class="card">                
               <div class="card-body">
                 <h5 id="fastest-laps-title" class="card-title">Fastest Laps <span>| Fastest</span></h5>                 
-                    <!-- Start Race Order Table -->
+                    <!-- Start Fastest Laps Table -->
                     <table class="table table-sm table-hover">
                       <thead>
                         <tr>
@@ -402,7 +488,7 @@
                         <span class="visually-hidden">Loading...</span>
                       </div>
                     </div>
-                    <!-- End Race Order Table --> 
+                    <!-- End Fastest Laps Table --> 
               </div>              
             </div>
             <!-- End Fastest Laps --> 
@@ -439,7 +525,7 @@
                 var html = "";
                 var pos = 1;
                 var driverId = '{{ driver.code }}';
-                var title = "Race Order <span> | Lap: " + data[0].lapnumber + "</span>"
+                var title = "Race Order <span> | (" + data[0].lapnumber + "/{{ total_laps }})</span>"
                 $.each(data, function(key, value) {
                   if (value.lapnumber % 4 === 0) {
                     html += "<tr><td>" + pos + "</td><td>" + value.driver + "</td><td>" + value.compound + " (" + value.tyrelife + ")</td><td>" + value.behind + "</td></tr>";
@@ -467,7 +553,7 @@
               success: function(data) {
                 var html = "";
                 var pos = 1;
-                var title = "Fastest Laps <span> | Fastest: " + data[0].driver + "</span>"
+                var title = "Fastest Laps <span> | " + data[0].driver + "</span>"
                 $.each(data, function(key, value) {
                   html += "<tr><td>" + pos + "</td><td>" + value.driver + "</td><td>" + formatTimeDelta(value.laptime) + "</td></tr>";
                   pos++;
@@ -475,6 +561,72 @@
                 $("tbody#fastest-laps-table").html(html);
                 $("h5#fastest-laps-title").html(title);
                 removeElement("fastest-lap-loading");
+              }
+            });
+          }, intervalTime);
+        }); 
+
+        // use this method to get the current fastest sector. 
+        $(document).ready(function() {
+          setInterval(function() {
+            $.ajax({
+              url: "{{ url_for('update_fastest_sector_one') }}",
+              success: function(data) {
+                console.log(data);
+                var html = "";
+                var pos = 1;
+                var title = "Sector 1 <span> | " + data[0].driver + "</span>"
+                $.each(data, function(key, value) {
+                  html += "<tr><td>" + pos + "</td><td>" + value.driver + "</td><td>" + formatTimeDelta(value.sector1time) + "</td></tr>";
+                  pos++;
+                });
+                $("tbody#fastest-sector-01-table").html(html);
+                $("h5#fastest-sector-01-title").html(title);
+                removeElement("fastest-sector-01-loading");
+              }
+            });
+          }, intervalTime);
+        }); 
+
+         // use this method to get the current fastest sector. 
+         $(document).ready(function() {
+          setInterval(function() {
+            $.ajax({
+              url: "{{ url_for('update_fastest_sector_two') }}",
+              success: function(data) {
+                console.log(data);
+                var html = "";
+                var pos = 1;
+                var title = "Sector 2 <span> | " + data[0].driver + "</span>"
+                $.each(data, function(key, value) {
+                  html += "<tr><td>" + pos + "</td><td>" + value.driver + "</td><td>" + formatTimeDelta(value.sector2time) + "</td></tr>";
+                  pos++;
+                });
+                $("tbody#fastest-sector-02-table").html(html);
+                $("h5#fastest-sector-02-title").html(title);
+                removeElement("fastest-sector-02-loading");
+              }
+            });
+          }, intervalTime);
+        }); 
+
+         // use this method to get the current fastest sector. 
+         $(document).ready(function() {
+          setInterval(function() {
+            $.ajax({
+              url: "{{ url_for('update_fastest_sector_three') }}",
+              success: function(data) {
+                console.log(data);
+                var html = "";
+                var pos = 1;
+                var title = "Sector 3 <span> | " + data[0].driver + "</span>"
+                $.each(data, function(key, value) {
+                  html += "<tr><td>" + pos + "</td><td>" + value.driver + "</td><td>" + formatTimeDelta(value.sector3time) + "</td></tr>";
+                  pos++;
+                });
+                $("tbody#fastest-sector-03-table").html(html);
+                $("h5#fastest-sector-03-title").html(title);
+                removeElement("fastest-sector-03-loading");
               }
             });
           }, intervalTime);

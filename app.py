@@ -338,8 +338,12 @@ def simulate(race_id):
    driver = Driver.query.where(Driver.driverId == driverId).first()
    # get qualifying position. 
    qual_position = Qualifying.query.where(Qualifying.raceId == race_id, Qualifying.driverId == driverId).first()
+
+   # get last race in laps. 
+   last_lap = Lap.query.where(Lap.raceId == raceId).order_by(Lap.lapnumber.desc()).limit(1).first()
+
    print('Starting simulation:', raceId)
-   return render_template('simulate.html', race=race, circuit=circuit, driver=driver, qual_position=qual_position.position, interval=interval)
+   return render_template('simulate.html', race=race, circuit=circuit, driver=driver, qual_position=qual_position.position, interval=interval, total_laps=last_lap.lapnumber)
 
 @app.route('/update_race_order', methods=['GET', 'POST'])
 @csrf.exempt
@@ -405,6 +409,48 @@ def update_fastest_laps():
    # format data for json. 
    fastest_laps = [row.as_dict() for row in fastest_laps]
    return jsonify(fastest_laps)
+
+@app.route('/update_fastest_sector_one', methods=['GET', 'POST'])
+@csrf.exempt
+def update_fastest_sector_one():   
+   global simulation
+   print('Sector 1:', simulation.get_lap())
+   # get new simulation values. 
+   lap = simulation.get_lap()
+   raceId = simulation.get_raceId()
+   # get fastest laps order by sector 1. 
+   fastest_sectors = Lap.query.filter(Lap.raceId == raceId, Lap.lapnumber <= lap, Lap.laptime != 'NaT').order_by(Lap.sector1time).limit(5).all()    
+   # format data for json. 
+   fastest_sectors = [row.as_dict() for row in fastest_sectors]
+   return jsonify(fastest_sectors)
+
+@app.route('/update_fastest_sector_two', methods=['GET', 'POST'])
+@csrf.exempt
+def update_fastest_sector_two():   
+   global simulation
+   print('Sector 2:', simulation.get_lap())
+   # get new simulation values. 
+   lap = simulation.get_lap()
+   raceId = simulation.get_raceId()
+   # get fastest laps order by sector 1. 
+   fastest_sectors = Lap.query.filter(Lap.raceId == raceId, Lap.lapnumber <= lap, Lap.laptime != 'NaT').order_by(Lap.sector2time).limit(5).all()    
+   # format data for json. 
+   fastest_sectors = [row.as_dict() for row in fastest_sectors]
+   return jsonify(fastest_sectors)
+
+@app.route('/update_fastest_sector_three', methods=['GET', 'POST'])
+@csrf.exempt
+def update_fastest_sector_three():   
+   global simulation
+   print('Sector 3:', simulation.get_lap())
+   # get new simulation values. 
+   lap = simulation.get_lap()
+   raceId = simulation.get_raceId()
+   # get fastest laps order by sector 1. 
+   fastest_sectors = Lap.query.filter(Lap.raceId == raceId, Lap.lapnumber <= lap, Lap.laptime != 'NaT').order_by(Lap.sector3time).limit(5).all()    
+   # format data for json. 
+   fastest_sectors = [row.as_dict() for row in fastest_sectors]
+   return jsonify(fastest_sectors)
 
 def format_gap(td):
     hours, remainder = divmod(td.seconds, 3600)
@@ -533,80 +579,84 @@ def import_laps():
       get_results(r.year, r.round)
       # get sprint results
       get_sprint_results(r.year, r.round)
-      # print(r.year, r.round, r.date)
-      session = fastf1.get_session(r.year, r.round, 'Race')
-      print('Importing:', r.year, r.name)
-      # load the session
-      session.load()
-      # get laps for given session
-      laps = session.laps
-      # store session data in dataframe
-      df = pd.DataFrame(laps)
-      # df = df.reset_index()  # make sure indexes pair with number of rows
-      for i in df.index:
-         lap = Lap()
-         lap.raceId = r.raceId
-         lap.time = df['Time'][i]
-         lap.driver = df['Driver'][i]
-         lap.drivernumber = df['DriverNumber'][i]
-         lap.laptime = df['LapTime'][i]
-         lap.lapnumber = df['LapNumber'][i]
-         lap.stint = df['Stint'][i]
-         lap.pitouttime = df['PitOutTime'][i]
-         lap.pitintime = df['PitInTime'][i]
-         lap.sector1time = df['Sector1Time'][i]
-         lap.sector2time = df['Sector2Time'][i]
-         lap.sector3time = df['Sector3Time'][i]
-         lap.sector1sessiontime = df['Sector1SessionTime'][i]
-         lap.sector2sessiontime = df['Sector2SessionTime'][i]
-         lap.sector3sessiontime = df['Sector3SessionTime'][i]
-         # avoid 'nan' value as they are no allow in MySQL.
-         if math.isnan (df['SpeedI1'][i]):
-            lap.speedi1 = 0
-         else:
-            lap.speedi1 = df['SpeedI1'][i]
-         # lap.speedi2 = df['SpeedI2'][i]
-         if math.isnan (df['SpeedI2'][i]):
-            lap.speedi2 = 0
-         else:
-            lap.speedi2 = df['SpeedI2'][i]
-         # lap.speedfl = df['SpeedFL'][i]
-         if math.isnan (df['SpeedFL'][i]):
-            lap.speedfl = 0
-         else:
-            lap.speedfl = df['SpeedFL'][i]
-         # lap.speedst = df['SpeedST'][i]
-         if math.isnan (df['SpeedST'][i]):
-            lap.speedst = 0
-         else:
-            lap.speedst = df['SpeedST'][i]         
-         # lap.ispersonalbest = df['IsPersonalBest'][i]
-         if math.isnan (df['IsPersonalBest'][i]):
-            lap.ispersonalbest = 0
-         else:
-            lap.ispersonalbest = df['IsPersonalBest'][i]            
-         lap.compound = df['Compound'][i]
-         # lap.tyrelife = df['TyreLife'][i]
-         if math.isnan (df['TyreLife'][i]):
-            lap.tyrelife = 0
-         else:
-            lap.tyrelife = df['TyreLife'][i] 
-         # lap.freshtyre = df['FreshTyre'][i]
-         if math.isnan (df['FreshTyre'][i]):
-            lap.freshtyre = 0
-         else:
-            lap.freshtyre = df['FreshTyre'][i]  
-         lap.team = df['Team'][i]
-         lap.lapstarttime = df['LapStartTime'][i]
-         lap.lapstartdate = df['LapStartDate'][i]
-         lap.trackstatus = df['TrackStatus'][i]
-         # lap.isaccurate = df['IsAccurate'][i]
-         if math.isnan (df['IsAccurate'][i]):
-            lap.isaccurate = 0
-         else:
-            lap.isaccurate = df['IsAccurate'][i]
-         db.session.add(lap) 
-      db.session.commit()
+      # if race is cancelled (like round 6 2023 - EMILIA-ROMAGNA), no laps will be found. add try / catch to handle this problem. 
+      try:
+         # print(r.year, r.round, r.date)
+         session = fastf1.get_session(r.year, r.round, 'Race')
+         print('Importing:', r.year, r.name)
+         # load the session
+         session.load()
+         # get laps for given session
+         laps = session.laps
+         # store session data in dataframe
+         df = pd.DataFrame(laps)
+         # df = df.reset_index()  # make sure indexes pair with number of rows
+         for i in df.index:
+            lap = Lap()
+            lap.raceId = r.raceId
+            lap.time = df['Time'][i]
+            lap.driver = df['Driver'][i]
+            lap.drivernumber = df['DriverNumber'][i]
+            lap.laptime = df['LapTime'][i]
+            lap.lapnumber = df['LapNumber'][i]
+            lap.stint = df['Stint'][i]
+            lap.pitouttime = df['PitOutTime'][i]
+            lap.pitintime = df['PitInTime'][i]
+            lap.sector1time = df['Sector1Time'][i]
+            lap.sector2time = df['Sector2Time'][i]
+            lap.sector3time = df['Sector3Time'][i]
+            lap.sector1sessiontime = df['Sector1SessionTime'][i]
+            lap.sector2sessiontime = df['Sector2SessionTime'][i]
+            lap.sector3sessiontime = df['Sector3SessionTime'][i]
+            # avoid 'nan' value as they are no allow in MySQL.
+            if math.isnan (df['SpeedI1'][i]):
+               lap.speedi1 = 0
+            else:
+               lap.speedi1 = df['SpeedI1'][i]
+            # lap.speedi2 = df['SpeedI2'][i]
+            if math.isnan (df['SpeedI2'][i]):
+               lap.speedi2 = 0
+            else:
+               lap.speedi2 = df['SpeedI2'][i]
+            # lap.speedfl = df['SpeedFL'][i]
+            if math.isnan (df['SpeedFL'][i]):
+               lap.speedfl = 0
+            else:
+               lap.speedfl = df['SpeedFL'][i]
+            # lap.speedst = df['SpeedST'][i]
+            if math.isnan (df['SpeedST'][i]):
+               lap.speedst = 0
+            else:
+               lap.speedst = df['SpeedST'][i]         
+            # lap.ispersonalbest = df['IsPersonalBest'][i]
+            if math.isnan (df['IsPersonalBest'][i]):
+               lap.ispersonalbest = 0
+            else:
+               lap.ispersonalbest = df['IsPersonalBest'][i]            
+            lap.compound = df['Compound'][i]
+            # lap.tyrelife = df['TyreLife'][i]
+            if math.isnan (df['TyreLife'][i]):
+               lap.tyrelife = 0
+            else:
+               lap.tyrelife = df['TyreLife'][i] 
+            # lap.freshtyre = df['FreshTyre'][i]
+            if math.isnan (df['FreshTyre'][i]):
+               lap.freshtyre = 0
+            else:
+               lap.freshtyre = df['FreshTyre'][i]  
+            lap.team = df['Team'][i]
+            lap.lapstarttime = df['LapStartTime'][i]
+            lap.lapstartdate = df['LapStartDate'][i]
+            lap.trackstatus = df['TrackStatus'][i]
+            # lap.isaccurate = df['IsAccurate'][i]
+            if math.isnan (df['IsAccurate'][i]):
+               lap.isaccurate = 0
+            else:
+               lap.isaccurate = df['IsAccurate'][i]
+            db.session.add(lap) 
+         db.session.commit()         
+      except:
+         pass    
 
    # return to home page.
    return redirect(url_for('index'))
@@ -702,36 +752,38 @@ def get_qualifying(year, round):
    response = requests.request("GET", url, headers=headers, data=payload)
    # parse json.
    data = json.loads(response.text)
-   # qualifying results as array. 
-   results = data['MRData']['RaceTable']['Races'][0]['QualifyingResults']
-   # get race id.
-   race_id = get_raceid(year, round)
-   # loop qualy results and get attributes. 
-   for result in results:
-      # create qualifying object. 
-      qualy = Qualifying()
-      # set values.          
-      qualy.raceId = race_id
-      qualy.driverId = get_driverid(result['Driver']['driverId'])
-      qualy.constructorId = get_constructorid(result['Constructor']['constructorId'])
-      qualy.number = result['number']
-      qualy.position = result['position']
-      if 'Q1' in result:
-         qualy.q1 = result['Q1']
-      else:
-         qualy.q1 = ''
-      if 'Q2' in result:
-         qualy.q2 = result['Q2']
-      else:
-         qualy. q2 = ''
-      if 'Q3' in result:
-         qualy.q3 = result['Q3']
-      else:
-         qualy.q3 = ''    
-      # add to db.
-      db.session.add(qualy) 
-   # commit chnages to db. 
-   db.session.commit()
+   # check if races are found. 
+   if 'Races' in data:
+      # qualifying results as array. 
+      results = data['MRData']['RaceTable']['Races'][0]['QualifyingResults']
+      # get race id.
+      race_id = get_raceid(year, round)
+      # loop qualy results and get attributes. 
+      for result in results:
+         # create qualifying object. 
+         qualy = Qualifying()
+         # set values.          
+         qualy.raceId = race_id
+         qualy.driverId = get_driverid(result['Driver']['driverId'])
+         qualy.constructorId = get_constructorid(result['Constructor']['constructorId'])
+         qualy.number = result['number']
+         qualy.position = result['position']
+         if 'Q1' in result:
+            qualy.q1 = result['Q1']
+         else:
+            qualy.q1 = ''
+         if 'Q2' in result:
+            qualy.q2 = result['Q2']
+         else:
+            qualy. q2 = ''
+         if 'Q3' in result:
+            qualy.q3 = result['Q3']
+         else:
+            qualy.q3 = ''    
+         # add to db.
+         db.session.add(qualy) 
+      # commit chnages to db. 
+      db.session.commit()
 
 def get_constructor_standings(year, round):
    # generate url. 
@@ -742,24 +794,26 @@ def get_constructor_standings(year, round):
    response = requests.request("GET", url, headers=headers, data=payload)
    # parse json.
    data = json.loads(response.text)
-   # qualifying results as array. 
-   results = data['MRData']['StandingsTable']['StandingsLists'][0]['ConstructorStandings']
-   # get race id.
-   race_id = get_raceid(year, round)
-   for result in results:
-      # create standing object. 
-      standing = ConstructorStanding()
-      # set values.          
-      standing.raceId = race_id
-      standing.constructorId = get_constructorid(result['Constructor']['constructorId'])
-      standing.points = result['points']
-      standing.position = result['position']
-      standing.positionText = result['positionText']
-      standing.wins = wins = result['wins']
-      # add to db.
-      db.session.add(standing) 
-   # commit chnages to db. 
-   db.session.commit()
+   # check if data is found. 
+   if 'StandingsLists' in data:
+      # qualifying results as array. 
+      results = data['MRData']['StandingsTable']['StandingsLists'][0]['ConstructorStandings']
+      # get race id.
+      race_id = get_raceid(year, round)
+      for result in results:
+         # create standing object. 
+         standing = ConstructorStanding()
+         # set values.          
+         standing.raceId = race_id
+         standing.constructorId = get_constructorid(result['Constructor']['constructorId'])
+         standing.points = result['points']
+         standing.position = result['position']
+         standing.positionText = result['positionText']
+         standing.wins = wins = result['wins']
+         # add to db.
+         db.session.add(standing) 
+      # commit chnages to db. 
+      db.session.commit()
 
 def get_driver_standings(year, round):
    # generate url. 
@@ -770,24 +824,26 @@ def get_driver_standings(year, round):
    response = requests.request("GET", url, headers=headers, data=payload)
    # parse json.
    data = json.loads(response.text)
-   # qualifying results as array. 
-   results = data['MRData']['StandingsTable']['StandingsLists'][0]['DriverStandings']
-   # get race id.
-   race_id = get_raceid(year, round)
-   for result in results:
-      # create standing object. 
-      standing = DriverStanding()
-      # set values.          
-      standing.raceId = race_id
-      standing.driverId = get_driverid(result['Driver']['driverId'])
-      standing.points = result['points']
-      standing.position = result['position']
-      standing.positionText = result['positionText']
-      standing.wins = wins = result['wins']
-      # add to db.
-      db.session.add(standing) 
-   # commit chnages to db. 
-   db.session.commit()
+   # check if data is found. 
+   if 'StandingsLists' in data:
+      # qualifying results as array. 
+      results = data['MRData']['StandingsTable']['StandingsLists'][0]['DriverStandings']
+      # get race id.
+      race_id = get_raceid(year, round)
+      for result in results:
+         # create standing object. 
+         standing = DriverStanding()
+         # set values.          
+         standing.raceId = race_id
+         standing.driverId = get_driverid(result['Driver']['driverId'])
+         standing.points = result['points']
+         standing.position = result['position']
+         standing.positionText = result['positionText']
+         standing.wins = wins = result['wins']
+         # add to db.
+         db.session.add(standing) 
+      # commit chnages to db. 
+      db.session.commit()
 
 def get_results(year, round):
    # generate url. 
@@ -800,47 +856,49 @@ def get_results(year, round):
    data = json.loads(response.text)
    # get race id.
    race_id = get_raceid(year, round)
-   # get race results as array. 
-   results = data['MRData']['RaceTable']['Races'][0]['Results']
-   for result in results:
-      race_result = Result()
-      constructor_result = ConstructorResult()      
-      race_result.raceId = race_id
-      constructor_result.raceId = race_id      
-      race_result.driverId = get_driverid(result['Driver']['driverId'])
-      race_result.constructorId = get_constructorid(result['Constructor']['constructorId'])
-      constructor_result.constructorId = get_constructorid(result['Constructor']['constructorId'])
-      race_result.number = result['number']
-      race_result.grid = result['grid']
-      race_result.position = result['position']
-      race_result.positionText = result['positionText']
-      race_result.positionOrder = result['position']
-      race_result.points = result['points']
-      constructor_result.points = result['points']
-      race_result.laps = result['laps']
-      if 'Time' in result:
-         race_result.time = result['Time']['time']
-         race_result.milliseconds = result['Time']['millis']
-      else:
-         race_result.time = ''
-         race_result.milliseconds = ''        
-      if 'FastestLap' in result:
-         race_result.fastestLap = result['FastestLap']['lap']
-         race_result.rank = result['FastestLap']['rank']
-         race_result.fastestLapTime = result['FastestLap']['Time']['time']
-         race_result.fastestLapSpeed = result['FastestLap']['AverageSpeed']['speed']
-      else:
-         race_result.fastestLap = ''
-         race_result.rank = ''
-         race_result.fastestLapTime = ''
-         race_result.fastestLapSpeed = ''        
-      race_result.statusId = get_statusid(result['status'])
-      constructor_result.statusId = get_statusid(result['status'])
-      # add to db.
-      db.session.add(race_result)
-      db.session.add(constructor_result)  
-   # commit chnages to db. 
-   db.session.commit()
+   # check if data is found. 
+   if 'Races' in data:
+      # get race results as array. 
+      results = data['MRData']['RaceTable']['Races'][0]['Results']
+      for result in results:
+         race_result = Result()
+         constructor_result = ConstructorResult()      
+         race_result.raceId = race_id
+         constructor_result.raceId = race_id      
+         race_result.driverId = get_driverid(result['Driver']['driverId'])
+         race_result.constructorId = get_constructorid(result['Constructor']['constructorId'])
+         constructor_result.constructorId = get_constructorid(result['Constructor']['constructorId'])
+         race_result.number = result['number']
+         race_result.grid = result['grid']
+         race_result.position = result['position']
+         race_result.positionText = result['positionText']
+         race_result.positionOrder = result['position']
+         race_result.points = result['points']
+         constructor_result.points = result['points']
+         race_result.laps = result['laps']
+         if 'Time' in result:
+            race_result.time = result['Time']['time']
+            race_result.milliseconds = result['Time']['millis']
+         else:
+            race_result.time = ''
+            race_result.milliseconds = ''        
+         if 'FastestLap' in result:
+            race_result.fastestLap = result['FastestLap']['lap']
+            race_result.rank = result['FastestLap']['rank']
+            race_result.fastestLapTime = result['FastestLap']['Time']['time']
+            race_result.fastestLapSpeed = result['FastestLap']['AverageSpeed']['speed']
+         else:
+            race_result.fastestLap = ''
+            race_result.rank = ''
+            race_result.fastestLapTime = ''
+            race_result.fastestLapSpeed = ''        
+         race_result.statusId = get_statusid(result['status'])
+         constructor_result.statusId = get_statusid(result['status'])
+         # add to db.
+         db.session.add(race_result)
+         db.session.add(constructor_result)  
+      # commit chnages to db. 
+      db.session.commit()
 
 def get_sprint_results(year, round):
    # generate url. 
