@@ -116,32 +116,35 @@ def query_db(query):
 # use this method to return to home page.
 @app.route('/')
 @csrf.exempt
-def index():
-   # get preferences. 
-   preferences = Preference.query.where(Preference.preferenceId == 1).limit(1).first()
-   print('preferences:', preferences)
-   # define sql query
-   races_query = 'SELECT DISTINCT r.raceid, r.date, r.name FROM laps l, races r WHERE l.raceid = r.raceid ORDER BY r.raceid DESC LIMIT 8;'
-   # get data.
-   recent_races = query_db(races_query)
-   # define sql query to get valid drivers (i.e. have race laps).
-   driver_query = '''SELECT driverId, forename, surname, code
-                     FROM   drivers
-                     WHERE  code IN (SELECT DISTINCT driver
-                                    FROM   laps); '''
-   # get data.
-   valid_drivers = query_db(driver_query)
-   print('valid_drivers:', valid_drivers)
-   # get race count.
-   races_count = Lap.query.group_by(Lap.raceId).count()
-   # get driver count.
-   driver_count = Driver.query.group_by(Driver.driverId).count()
-   # get teams count.
-   team_count = Constructor.query.group_by(Constructor.constructorId).count()
-   # get last race in laps. 
-   last_lap = Lap.query.order_by(Lap.lapId.desc()).limit(1).first()
-   # get last race based on last lap. 
-   last_race = Race.query.where(Race.raceId == last_lap.raceId).first()
+def index():   
+   try:
+      # get preferences. 
+      preferences = Preference.query.where(Preference.preferenceId == 1).limit(1).first()
+      print('preferences:', preferences)
+      # define sql query
+      races_query = 'SELECT DISTINCT r.raceid, r.date, r.name FROM laps l, races r WHERE l.raceid = r.raceid ORDER BY r.raceid DESC LIMIT 8;'
+      # get data.
+      recent_races = query_db(races_query)
+      # define sql query to get valid drivers (i.e. have race laps).
+      driver_query = '''SELECT driverId, forename, surname, code
+                        FROM   drivers
+                        WHERE  code IN (SELECT DISTINCT driver
+                                       FROM   laps); '''
+      # get data.
+      valid_drivers = query_db(driver_query)
+      print('valid_drivers:', valid_drivers)
+      # get race count.
+      races_count = Lap.query.group_by(Lap.raceId).count()
+      # get driver count.
+      driver_count = Driver.query.group_by(Driver.driverId).count()
+      # get teams count.
+      team_count = Constructor.query.group_by(Constructor.constructorId).count()
+      # get last race in laps. 
+      last_lap = Lap.query.order_by(Lap.lapId.desc()).limit(1).first()
+      # get last race based on last lap. 
+      last_race = Race.query.where(Race.raceId == last_lap.raceId).first()   
+   except:
+      return render_template('index.html')   
    # print to console. 
    print('Request for index page received')
    # go to index page, and send race data. 
@@ -753,7 +756,7 @@ def get_qualifying(year, round):
    # parse json.
    data = json.loads(response.text)
    # check if races are found. 
-   if 'Races' in data:
+   if 'Races' in data['MRData']['RaceTable'] and len(data['MRData']['RaceTable']['Races']) > 0:
       # qualifying results as array. 
       results = data['MRData']['RaceTable']['Races'][0]['QualifyingResults']
       # get race id.
@@ -787,7 +790,7 @@ def get_qualifying(year, round):
 
 def get_constructor_standings(year, round):
    # generate url. 
-   url = f"http://ergast.com/api/f1/{year}/{round}/constructorStandings.json"
+   url = f'http://ergast.com/api/f1/{year}/{round}/constructorStandings.json'
    payload={}
    headers = {}
    # send request.
@@ -795,7 +798,7 @@ def get_constructor_standings(year, round):
    # parse json.
    data = json.loads(response.text)
    # check if data is found. 
-   if 'StandingsLists' in data:
+   if 'StandingsLists' in data['MRData']['StandingsTable'] and len(data['MRData']['StandingsTable']['StandingsLists']) > 0:
       # qualifying results as array. 
       results = data['MRData']['StandingsTable']['StandingsLists'][0]['ConstructorStandings']
       # get race id.
@@ -825,7 +828,7 @@ def get_driver_standings(year, round):
    # parse json.
    data = json.loads(response.text)
    # check if data is found. 
-   if 'StandingsLists' in data:
+   if 'StandingsLists' in data['MRData']['StandingsTable'] and len(data['MRData']['StandingsTable']['StandingsLists']) > 0:
       # qualifying results as array. 
       results = data['MRData']['StandingsTable']['StandingsLists'][0]['DriverStandings']
       # get race id.
@@ -857,7 +860,7 @@ def get_results(year, round):
    # get race id.
    race_id = get_raceid(year, round)
    # check if data is found. 
-   if 'Races' in data:
+   if 'Races' in data['MRData']['RaceTable'] and len(data['MRData']['RaceTable']['Races']) > 0:
       # get race results as array. 
       results = data['MRData']['RaceTable']['Races'][0]['Results']
       for result in results:
@@ -912,7 +915,7 @@ def get_sprint_results(year, round):
    # get race id.
    race_id = get_raceid(year, round)
    # get race results as array. 
-   if 'SprintResults' in data:
+   if 'Races' in data['MRData']['RaceTable'] and len(data['MRData']['RaceTable']['Races']) > 0:
       results = data['MRData']['RaceTable']['Races'][0]['SprintResults']
       for result in results:
          sprint_result = SprintResult()
@@ -951,9 +954,9 @@ def get_sprint_results(year, round):
       db.session.commit()
 
 def get_pitstops(year, round):
-    length = 30
-    offset = 0
-    while length == 30:
+   length = 30
+   offset = 0
+   while length == 30:
       # generate url. 
       url = f"http://ergast.com/api/f1/{year}/{round}/pitstops.json?limit=30&offset={offset}"
       payload={}
@@ -963,10 +966,11 @@ def get_pitstops(year, round):
       # parse json.
       data = json.loads(response.text)
       # get race results as array. 
-      if 'PitStops' in data:
+      if 'Races' in data['MRData']['RaceTable'] and len(data['MRData']['RaceTable']['Races']) > 0:
          pitstops = data['MRData']['RaceTable']['Races'][0]['PitStops']
          # get length of the latest response. 
          length = len(pitstops)    
+         print('Pitstops:', length)
          for pit in pitstops:
             pitstop = PitStop()
             pitstop.raceId = get_raceid(year, round)
@@ -978,7 +982,7 @@ def get_pitstops(year, round):
             pitstop.milliseconds = remove_colon_and_dot(pit['duration'])
             # add to db.
             db.session.add(pitstop)      
-         # increase offset
+         # increase offset.
          offset += 30
          # commit changes to db. 
          db.session.commit()

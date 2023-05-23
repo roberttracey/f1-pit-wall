@@ -137,7 +137,11 @@
                           <i class="bi bi-flag"></i>
                         </div>
                         <div class="ps-3">
-                          <h6>{{ races_count }}</h6>                        
+                          {% if races_count %}
+                            <h6>{{ races_count }}</h6>
+                          {% else %} 
+                            <h6>0</h6>
+                          {% endif %}                       
                           <span class="text-muted small pt-2 ps-1">View & simulate races.</span>  
                         </div>
                       </div>
@@ -158,7 +162,11 @@
                           <i class="bi bi-person"></i>
                         </div>
                         <div class="ps-3">
-                          <h6>{{ driver_count }}</h6>                        
+                          {% if driver_count %}
+                            <h6>{{ driver_count }}</h6>
+                          {% else %} 
+                            <h6>0</h6>
+                          {% endif %}                       
                           <span class="text-muted small pt-2 ps-1">View Formula 1 Drivers.</span>  
                         </div>
                       </div>
@@ -179,7 +187,11 @@
                           <i class="bi bi-layout-text-window-reverse"></i>
                         </div>
                         <div class="ps-3">
-                          <h6>{{ last_race.date.strftime('%a, %B %d') }}</h6>                        
+                          {% if last_race %}
+                            <h6>{{ last_race.date.strftime('%a, %B %d') }}</h6>
+                          {% else %} 
+                            <h6>No data found!</h6>
+                          {% endif %}                                                
                           <span class="text-muted small pt-2 ps-1">View drivers and constructors tables.</span>  
                         </div>
                       </div>
@@ -200,7 +212,11 @@
                           <i class="bi bi-people"></i>
                         </div>
                         <div class="ps-3">
-                          <h6>{{ team_count }}</h6>                        
+                          {% if team_count %}
+                            <h6>{{ team_count }}</h6>
+                          {% else %} 
+                            <h6>0</h6>
+                          {% endif %}                      
                           <span class="text-muted small pt-2 ps-1">View Formula 1 Teams.</span>  
                         </div>
                       </div>
