@@ -15,7 +15,7 @@ from flask import Flask, redirect, render_template, request, send_from_directory
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
-from classes import RaceOrder, Simulation, LapGraph, Battle
+from classes import RaceOrder, Simulation, LapGraph, Battle, PitStopData
 from sqlalchemy import create_engine, Integer, String, ForeignKey, text, update, Table, Column, JSON
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -455,6 +455,44 @@ def update_fastest_sector_three():
    fastest_sectors = [row.as_dict() for row in fastest_sectors]
    return jsonify(fastest_sectors)
 
+@app.route('/update_pitstops', methods=['GET', 'POST'])
+@csrf.exempt
+def update_pitstops():   
+   global simulation
+   print('Pitstops:', simulation.get_lap())
+   # get new simulation values. 
+   lap = simulation.get_lap()
+   raceId = simulation.get_raceId()
+   # create engine. 
+   engine = create_engine(app.config.get('DATABASE_URI'))
+   # define SQL query
+   query = '''SELECT d.code,
+                     p.stop,
+                     p.lap,
+                     p.duration, 
+                     p.milliseconds
+                  FROM   pitstops p
+                        INNER JOIN drivers d
+                           ON p.driverid = d.driverid
+                  WHERE  p.raceid = {}
+                        AND p.lap <= {}
+                  ORDER  BY p.lap;'''.format(raceId, lap)
+   query = text(query)
+   # execute query
+   with engine.connect() as conn:
+      result = conn.execute(query)
+   # create array for data. 
+   pitstops = []
+   # loop pit stop data. 
+   for pit in result:
+      pitstop = PitStopData(pit.code, pit.stop, pit.lap, pit.duration, pit.milliseconds)
+      pitstops.append(pitstop)
+   # clean up database connection.
+   engine.dispose()
+   # format data for json. 
+   pitstops = [row.as_dict() for row in pitstops]
+   return jsonify(pitstops)
+
 def format_gap(td):
     hours, remainder = divmod(td.seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
@@ -475,7 +513,7 @@ def calculate_interval(data):
       time_diff = curr_time - prev_time
       behind = curr_time - leader
       # create new race order object.       
-      race_order = RaceOrder(lap.lapnumber, lap.driver, lap.team, lap.compound, lap.tyrelife, lap.time, format_gap(time_diff), format_gap(behind))
+      race_order = RaceOrder(lap.lapnumber, lap.driver, lap.team, lap.compound, lap.tyrelife, lap.time, format_gap(time_diff), format_gap(behind), lap.trackstatus)
       # add race order to array. 
       time_diffs.append(race_order)
       # set previous value to current value for next calculation. 

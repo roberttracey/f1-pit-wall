@@ -124,7 +124,7 @@ class Lap(db.Model):
     isaccurate = Column(Boolean)    
 
     def __str__(self):
-        return f"(lapId={self.lapId}, raceId={self.raceId}, lapnumber={self.lapnumber}, driver='{self.driver}', team='{self.team}', compound='{self.compound}', laptime={self.laptime}, time={self.time})"
+        return f"(lapId={self.lapId}, raceId={self.raceId}, lapnumber={self.lapnumber}, driver='{self.driver}', team='{self.team}', compound='{self.compound}', laptime={self.laptime}, time={self.time}, trackstatus={self.trackstatuss})"
     
     def as_dict(self):
         return {
@@ -138,7 +138,8 @@ class Lap(db.Model):
             'sector1time': self.sector1time,
             'sector2time': self.sector2time,
             'sector3time': self.sector3time,
-            'time': self.time
+            'time': self.time,
+            'trackstatus': self.trackstatus
         }
     
 class TrackStatus(db.Model):
@@ -163,6 +164,17 @@ class PitStop(db.Model):
 
     def __str__(self):
         return self.raceId
+    
+    def as_dict(self):
+        return {
+            'raceId': self.raceId,
+            'driverId': self.driverId,
+            'stop': self.stop,
+            'lap': self.lap,
+            'time': self.time,
+            'duration': self.duration,
+            'milliseconds': self.milliseconds
+        }
     
     
 class Qualifying(db.Model):

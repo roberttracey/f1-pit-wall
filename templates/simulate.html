@@ -127,8 +127,7 @@
                         <span class="text-muted small pt-2 ps-1">position</span>  
                       </div>
                     </div>
-                  </div>
-  
+                  </div>  
                 </div>
               </div>
               <!-- End Driver Card -->
@@ -154,16 +153,16 @@
   
               <!-- Start Status Card -->
               <div class="col-xxl-4 col-md-6">
-                <div class="card info-card revenue-card">  
+                <div id="status-card" class="card info-card green-card">  
                   <div class="card-body">
-                    <h5 class="card-title">Track Status <span>| Status</span></h5>  
+                    <h5 class="card-title">Track <span>| Flag</span></h5>  
                     <div class="d-flex align-items-center">
                       <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
                         <i class="bi bi-flag"></i>
                       </div>
                       <div class="ps-3">
-                        <h6>2</h6>
-                        <span class="text-muted small pt-2 ps-1">drivers</span>  
+                        <h6 id="track-status">Clear</h6>
+                        <span class="text-muted small pt-2 ps-1">status</span>  
                       </div>
                     </div>
                   </div>
@@ -178,7 +177,7 @@
                   <div class="card-body">
                     <h5 class="card-title">Attack</h5>
                     <!-- Start Attack Battle Table -->
-                    <table id="attack-battle-table" class="table table-sm table-borderless" hidden="true">
+                    <table id="attack-battle-table" class="table table-sm table-borderedless" hidden="true">
                       <thead>
                       <tr>
                         <th scope="col">Driver</th>
@@ -212,7 +211,7 @@
                   <div class="card-body">
                     <h5 class="card-title">Defence</h5>
                     <!-- Start Attack Battle Table -->
-                    <table id="defence-battle-table" class="table table-sm table-borderless" hidden="true">
+                    <table id="defence-battle-table" class="table table-sm table-borderedless" hidden="true">
                       <thead>
                       <tr>
                         <th scope="col">Driver</th>
@@ -346,6 +345,30 @@
                 </div>
               </div>    
               <!-- End Laps Graph -->  
+
+              <!-- Start Pitstops Table -->
+              <div class="col-12">
+                <div class="card top-selling overflow-auto">
+                  <div class="card-body pb-0">
+                    <h5 id="pitstops-table-title" class="card-title">Pit Stops <span>| Total</span></h5>
+                    <table class="table table-borderless">
+                      <thead>
+                        <tr>
+                          <th scope="col">#</th>
+                          <th scope="col">Driver</th>
+                          <th scope="col">Stop</th>
+                          <th scope="col">Lap</th>
+                          <th scope="col">Duration</th>
+                        </tr>
+                      </thead>
+                      <tbody id="pitstops-table"> 
+                        <!-- Rows Automaticcaly Updated Using AJAX -->              
+                      </tbody>
+                    </table>                    
+                  </div>
+                </div>
+              </div>
+              <!-- End Pitstops Table -->
               
               <!-- Start Fastest Sector 1 -->
               <div class="col-xxl-4 col-md-6">    
@@ -439,6 +462,8 @@
   
           <!-- Right side columns -->
           <div class="col-lg-4">
+
+            <!-- Start Race Order -->
             <div class="card">                
               <div class="card-body">
                 <h5 id="race-order-title" class="card-title">Race Order <span>| Lap</span></h5>
@@ -465,33 +490,50 @@
                 </div>
               </div>  
               <!-- End Race Order -->
-        
-            <!-- Start Fastest Laps -->
-            <div class="card">                
-              <div class="card-body">
-                <h5 id="fastest-laps-title" class="card-title">Fastest Laps <span>| Fastest</span></h5>                 
-                    <!-- Start Fastest Laps Table -->
-                    <table class="table table-sm table-hover">
-                      <thead>
-                        <tr>
-                          <th scope="col">#</th>
-                          <th scope="col">Driver</th>
-                          <th scope="col">Time</th>
-                        </tr>
-                      </thead>
-                      <tbody id="fastest-laps-table"> 
-                        <!-- Rows Automaticcaly Updated Using AJAX -->              
-                      </tbody>
-                    </table>
-                    <div id="fastest-lap-loading" class="d-flex justify-content-center">
-                      <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                      </div>
+
+              <!-- Start Pit Stops Time Card -->
+              <div class="card info-card red-card">                
+                <div class="card-body">
+                  <h5 class="card-title">Pit Stops <span>| Average Time</span></h5>  
+                  <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                      <i class="bi bi-sign-stop"></i>
                     </div>
-                    <!-- End Fastest Laps Table --> 
-              </div>              
-            </div>
-            <!-- End Fastest Laps --> 
+                    <div class="ps-3">
+                      <h6 id="pitstops-average">0</h6>
+                      <span class="text-muted small pt-2 ps-1">seconds</span>  
+                    </div>
+                  </div>
+                </div>  
+              </div>
+              <!-- End Pit Stops Time Card -->
+        
+              <!-- Start Fastest Laps -->
+              <div class="card">                
+                <div class="card-body">
+                  <h5 id="fastest-laps-title" class="card-title">Fastest Laps <span>| Fastest</span></h5>                 
+                      <!-- Start Fastest Laps Table -->
+                      <table class="table table-sm table-hover">
+                        <thead>
+                          <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Driver</th>
+                            <th scope="col">Time</th>
+                          </tr>
+                        </thead>
+                        <tbody id="fastest-laps-table"> 
+                          <!-- Rows Automaticcaly Updated Using AJAX -->              
+                        </tbody>
+                      </table>
+                      <div id="fastest-lap-loading" class="d-flex justify-content-center">
+                        <div class="spinner-border" role="status">
+                          <span class="visually-hidden">Loading...</span>
+                        </div>
+                      </div>
+                      <!-- End Fastest Laps Table --> 
+                </div>              
+              </div>
+              <!-- End Fastest Laps -->
           </div>
           <!-- End Right side columns -->  
         </div>        
@@ -525,16 +567,77 @@
                 var html = "";
                 var pos = 1;
                 var driverId = '{{ driver.code }}';
-                var title = "Race Order <span> | (" + data[0].lapnumber + "/{{ total_laps }})</span>"
+                var colour = '';
+                var title = "Race Order <span> | " + data[0].lapnumber + " of {{ total_laps }}</span>"
+                // get status card. 
+                var statusCard = document.getElementById('status-card');                
+                var status = '';
+                var statusId = data[0].trackstatus;
+                console.log('statusId:' + statusId)
+                switch (statusId) {
+                  case 2:
+                    // set status text.                     
+                    $("h6#track-status").html('Yellow Flag');
+                    // change the class to update colour. 
+                    statusCard.className = 'card info-card yellow-card';
+                    break;
+                  case 4:
+                    // set status text.                     
+                    $("h6#track-status").html('Safety Car');
+                    // change the class to update colour. 
+                    statusCard.className = 'card info-card yellow-card';
+                    break;
+                  case 5:
+                    // set status text.                     
+                    $("h6#track-status").html('Red Flag');
+                    // change the class to update colour. 
+                    statusCard.className = 'card info-card red-card';
+                    break;
+                  case 6:
+                    // set status text.                     
+                    $("h6#track-status").html('VSC');
+                    // change the class to update colour. 
+                    statusCard.className = 'card info-card yellow-card';
+                    break;
+                  case 7:
+                    // set status text.                     
+                    $("h6#track-status").html('VSC Ending');
+                    // change the class to update colour. 
+                    statusCard.className = 'card info-card yellow-card';
+                    break;
+                  default:
+                    // set status text.                     
+                    $("h6#track-status").html('Clear');
+                    // change the class to update colour. 
+                    statusCard.className = 'card info-card green-card';
+                }
                 $.each(data, function(key, value) {
-                  if (value.lapnumber % 4 === 0) {
-                    html += "<tr><td>" + pos + "</td><td>" + value.driver + "</td><td>" + value.compound + " (" + value.tyrelife + ")</td><td>" + value.behind + "</td></tr>";
-                    } else {
-                      html += "<tr><td>" + pos + "</td><td>" + value.driver + "</td><td>" + value.compound + " (" + value.tyrelife + ")</td><td>" + value.gap + "</td></tr>";
-                    }    
-                    if (value.driver === driverId) {
+                  // if selected driver.
+                  if (value.driver === driverId) {
+                      // update position card. 
                       $("h6#driver-position").html(getOrdinalNum(pos));
+                      // set colour on race order table. 
+                      colour = '<tr class="table-success">';
+                    } else {
+                      colour = '<tr>';
                     }
+                  // every fourth lap switch to show gaps. 
+                  if (value.lapnumber % 4 === 0) {                    
+                    html += colour + 
+                              '<td>' + pos + '</td>' +
+                              '<td>' + value.driver + '</td>' + 
+                              '<td>' + value.compound + ' (' + value.tyrelife + ')</td>' +
+                              '<td>' + value.behind + '</td>' +
+                            '</tr>';
+                    } else {
+                      html += colour + 
+                              '<td>' + pos + '</td>' +
+                              '<td>' + value.driver + '</td>' + 
+                              '<td>' + value.compound + ' (' + value.tyrelife + ')</td>' +
+                              '<td>' + value.gap + '</td>' +
+                            '</tr>';
+                    }    
+                    
                   pos++;
                 });
                 $("tbody#race-order-table").html(html);
@@ -553,9 +656,25 @@
               success: function(data) {
                 var html = "";
                 var pos = 1;
-                var title = "Fastest Laps <span> | " + data[0].driver + "</span>"
+                var driverId = '{{ driver.code }}';
+                var title = "Fastest Laps <span> | " + data[0].driver + "</span>";
                 $.each(data, function(key, value) {
-                  html += "<tr><td>" + pos + "</td><td>" + value.driver + "</td><td>" + formatTimeDelta(value.laptime) + "</td></tr>";
+                  // if selected driver.
+                  if (value.driver === driverId) {
+                      // set colour on race order table. 
+                      html += '<tr class="table-success">' +
+                                '<td>' + pos + '</td>' + 
+                                '<td>' + value.driver + '</td>' +
+                                '<td>' + formatTimeDelta(value.laptime) + '</td>' +
+                              '</tr>';
+                    } else {
+                      html += '<tr>' +
+                                '<td>' + pos + '</td>' + 
+                                '<td>' + value.driver + '</td>' +
+                                '<td>' + formatTimeDelta(value.laptime) + '</td>' +
+                              '</tr>';
+                    }
+                  // increment position. 
                   pos++;
                 });
                 $("tbody#fastest-laps-table").html(html);
@@ -572,12 +691,27 @@
             $.ajax({
               url: "{{ url_for('update_fastest_sector_one') }}",
               success: function(data) {
-                console.log(data);
                 var html = "";
                 var pos = 1;
+                var driverId = '{{ driver.code }}';
                 var title = "Sector 1 <span> | " + data[0].driver + "</span>"
                 $.each(data, function(key, value) {
-                  html += "<tr><td>" + pos + "</td><td>" + value.driver + "</td><td>" + formatTimeDelta(value.sector1time) + "</td></tr>";
+                  // if selected driver.
+                  if (value.driver === driverId) {
+                      // set colour on race order table. 
+                      html += '<tr class="table-success">' +
+                                '<td>' + pos + '</td>' + 
+                                '<td>' + value.driver + '</td>' +
+                                '<td>' + formatTimeDelta(value.laptime) + '</td>' +
+                              '</tr>';
+                    } else {
+                      html += '<tr>' +
+                                '<td>' + pos + '</td>' + 
+                                '<td>' + value.driver + '</td>' +
+                                '<td>' + formatTimeDelta(value.laptime) + '</td>' +
+                              '</tr>';
+                    }
+                  // increment position. 
                   pos++;
                 });
                 $("tbody#fastest-sector-01-table").html(html);
@@ -594,12 +728,27 @@
             $.ajax({
               url: "{{ url_for('update_fastest_sector_two') }}",
               success: function(data) {
-                console.log(data);
                 var html = "";
                 var pos = 1;
+                var driverId = '{{ driver.code }}';
                 var title = "Sector 2 <span> | " + data[0].driver + "</span>"
                 $.each(data, function(key, value) {
-                  html += "<tr><td>" + pos + "</td><td>" + value.driver + "</td><td>" + formatTimeDelta(value.sector2time) + "</td></tr>";
+                  // if selected driver.
+                  if (value.driver === driverId) {
+                      // set colour on race order table. 
+                      html += '<tr class="table-success">' +
+                                '<td>' + pos + '</td>' + 
+                                '<td>' + value.driver + '</td>' +
+                                '<td>' + formatTimeDelta(value.laptime) + '</td>' +
+                              '</tr>';
+                    } else {
+                      html += '<tr>' +
+                                '<td>' + pos + '</td>' + 
+                                '<td>' + value.driver + '</td>' +
+                                '<td>' + formatTimeDelta(value.laptime) + '</td>' +
+                              '</tr>';
+                    }
+                  // increment position. 
                   pos++;
                 });
                 $("tbody#fastest-sector-02-table").html(html);
@@ -616,17 +765,66 @@
             $.ajax({
               url: "{{ url_for('update_fastest_sector_three') }}",
               success: function(data) {
-                console.log(data);
                 var html = "";
                 var pos = 1;
+                var driverId = '{{ driver.code }}';
                 var title = "Sector 3 <span> | " + data[0].driver + "</span>"
                 $.each(data, function(key, value) {
-                  html += "<tr><td>" + pos + "</td><td>" + value.driver + "</td><td>" + formatTimeDelta(value.sector3time) + "</td></tr>";
+                  // if selected driver.
+                  if (value.driver === driverId) {
+                      // set colour on race order table. 
+                      html += '<tr class="table-success">' +
+                                '<td>' + pos + '</td>' + 
+                                '<td>' + value.driver + '</td>' +
+                                '<td>' + formatTimeDelta(value.laptime) + '</td>' +
+                              '</tr>';
+                    } else {
+                      html += '<tr>' +
+                                '<td>' + pos + '</td>' + 
+                                '<td>' + value.driver + '</td>' +
+                                '<td>' + formatTimeDelta(value.laptime) + '</td>' +
+                              '</tr>';
+                    }
+                  // increment position. 
                   pos++;
                 });
                 $("tbody#fastest-sector-03-table").html(html);
                 $("h5#fastest-sector-03-title").html(title);
                 removeElement("fastest-sector-03-loading");
+              }
+            });
+          }, intervalTime);
+        }); 
+
+        // use this method to get pit stops. 
+        $(document).ready(function() {
+          setInterval(function() {
+            $.ajax({
+              url: "{{ url_for('update_pitstops') }}",
+              success: function(data) {
+                var html = "";
+                var pos = 1;
+                var title = "Pit Stops <span> | " + data.length + "</span>"
+                $.each(data, function(key, value) {
+                  html += '<tr>' +
+                            '<td>' + pos + '</td>' + 
+                            '<td>' + value.driver + '</td>' +
+                            '<td>' + value.stop + '</td>' +
+                            '<td>' + value.lap + '</td>' +
+                            '<td>' + value.duration + '</td>' +
+                          '</tr>';
+                  // increment position. 
+                  pos++;
+                });
+                // calculate the average pit time.     
+                var average = 0;           
+                if (data.length > 0) {
+                  var sum = data.reduce((acc, val) => acc + parseInt(val.milliseconds), 0);
+                  average = sum / data.length;
+                }                 
+                $("tbody#pitstops-table").html(html);
+                $("h5#pitstops-table-title").html(title);
+                $("h6#pitstops-average").html(average.toFixed(2));
               }
             });
           }, intervalTime);

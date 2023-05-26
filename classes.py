@@ -1,5 +1,5 @@
 class RaceOrder:
-    def __init__(self, lapnumber, driver, team, compound, tyrelife, time, gap, behind):
+    def __init__(self, lapnumber, driver, team, compound, tyrelife, time, gap, behind, trackstatus):
         self._lapnumber = lapnumber
         self._driver = driver
         self._team = team
@@ -8,10 +8,11 @@ class RaceOrder:
         self._gap = gap
         self._behind = behind
         self._tyrelife = tyrelife
+        self._trackstatus = trackstatus
        
 
     def __str__(self):
-        return f"(lapnumber={self._lapnumber}, driver='{self._driver}', team='{self._team}', compound='{self._compound}', tyrelife='{self._tyrelife}', time={self._time}, gap={self._gap}, behind={self._behind})"
+        return f"(lapnumber={self._lapnumber}, driver='{self._driver}', team='{self._team}', compound='{self._compound}', tyrelife='{self._tyrelife}', time={self._time}, gap={self._gap}, behind={self._behind}, trackstatus={self._trackstatus})"
     
     def as_dict(self):
         return {
@@ -22,7 +23,8 @@ class RaceOrder:
             'tyrelife': self._tyrelife,
             'time': self._time,
             'gap': self._gap,
-            'behind': self._behind
+            'behind': self._behind,
+            'trackstatus': self._trackstatus
         }
     
 class Simulation:
@@ -108,4 +110,25 @@ class Battle:
             'compound': self._compound,
             'tyrelife': self._tyrelife,
             'drs': self._drs
+        }
+    
+
+class PitStopData:
+    def __init__(self, driver, stop, lap, duration, milliseconds):
+        self._driver = driver
+        self._stop = stop
+        self._lap = lap
+        self._duration = duration
+        self._milliseconds = milliseconds
+
+    def __str__(self):
+        return f"(driver={self._driver}, stop='{self._stop}', lap='{self._lap}', duration='{self._duration}', milliseconds='{self._milliseconds}')"
+    
+    def as_dict(self):
+        return {
+            'driver': self._driver,
+            'stop': self._stop,
+            'lap': self._lap,
+            'duration': self._duration,
+            'milliseconds': self._duration
         }

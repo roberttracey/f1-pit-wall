@@ -835,6 +835,21 @@ h6 {
   background: #ffecdf;
 }
 
+.dashboard .red-card .card-icon {
+  color: #FF1801;
+  background: #ffecdf;
+}
+
+.dashboard .yellow-card .card-icon {
+  color: #FFF700;
+  background: #feffd0;
+}
+
+.dashboard .green-card .card-icon {
+  color: #2eca6a;
+  background: #e0f8e9;
+}
+
 .dashboard .defend-card .card-icon {
   color: #ca2e3b;
   background: #faa1a1;
