@@ -124,7 +124,7 @@ class Lap(db.Model):
     isaccurate = Column(Boolean)    
 
     def __str__(self):
-        return f"(lapId={self.lapId}, raceId={self.raceId}, lapnumber={self.lapnumber}, driver='{self.driver}', team='{self.team}', compound='{self.compound}', laptime={self.laptime}, time={self.time}, trackstatus={self.trackstatuss})"
+        return f"(lapId={self.lapId}, raceId={self.raceId}, lapnumber={self.lapnumber}, driver='{self.driver}', team='{self.team}', compound='{self.compound}', laptime={self.laptime}, time={self.time}, trackstatus={self.trackstatus})"
     
     def as_dict(self):
         return {

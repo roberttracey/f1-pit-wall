@@ -15,7 +15,7 @@ from flask import Flask, redirect, render_template, request, send_from_directory
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
-from classes import RaceOrder, Simulation, LapGraph, Battle, PitStopData
+from classes import RaceOrder, Simulation, LapGraph, Battle, PitStopData, PostPitStop
 from sqlalchemy import create_engine, Integer, String, ForeignKey, text, update, Table, Column, JSON
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -455,6 +455,65 @@ def update_fastest_sector_three():
    fastest_sectors = [row.as_dict() for row in fastest_sectors]
    return jsonify(fastest_sectors)
 
+@app.route('/post_pit_gap', methods=['GET', 'POST'])
+@csrf.exempt
+def post_pit_gap():   
+   global simulation
+   # get new simulation values. 
+   lap = simulation.get_lap()
+   raceId = simulation.get_raceId()
+   # get average pit time at this stage of the race. 
+   pitstops = PitStop.query.where(PitStop.raceId == raceId, PitStop.lap <= lap).all()
+   # get current race order. 
+   race_order = Lap.query.where(Lap.raceId == simulation.get_raceId(), Lap.lapnumber == simulation.get_lap()).order_by(Lap.time).all()  
+   # get current drivers position. 
+   current_position = position(race_order)
+   print('Position Before:', current_position)  
+   current_time = pd.to_timedelta(race_order[current_position - 1].time)
+   print('Old Time:', current_time)
+
+   if len(pitstops) > 0:
+      # get the sum of milliseconds.
+      total = sum(item.milliseconds for item in pitstops)
+      # divide by the number milliseconds.
+      average = total / len(pitstops)
+      # convert average to timedelta. 
+      td_average = milliseconds_to_timedelta(average)
+      new_time = current_time + td_average
+      print('New Time', new_time)
+      # get race order after current driver.  
+      behind = race_order[current_position:]
+      # loop over drivers behind. 
+      for order in behind: 
+         if pd.to_timedelta(order.time) >= new_time: 
+            # set default values. 
+            clearAir = False
+            aheadDriver = '-'
+            aheadGap = milliseconds_to_timedelta(0)           
+            behindDriver = '-'
+            behindGap = milliseconds_to_timedelta(0)
+            # if user not in first, check values for driver ahead. 
+            if current_position > 1:
+               aheadDriver = race_order[current_position - 1].driver
+               aheadGap = pd.to_timedelta(timedelta_difference(new_time, race_order[current_position - 1].time))
+            # if user not in last place, check values for driver behind.
+            if current_position < 20:
+               behindDriver = order.driver
+               behindGap = pd.to_timedelta(timedelta_difference(order.time, new_time))
+            # check if driver has clear air. 
+            if aheadGap.total_seconds() > 5 and behindGap.total_seconds() > 3:
+               clearAir = True
+            post = PostPitStop(aheadDriver, format_gap(aheadGap), behindDriver, format_gap(behindGap), current_position, clearAir, round(average / 1000, 2))  
+            return jsonify(post.as_dict())
+         # increment position.  
+         current_position += 1 
+   return jsonify(None)
+  
+
+# use this method to convert milliseconds (from db) to timedelta. 
+def milliseconds_to_timedelta(milliseconds):
+    return pd.Timedelta(milliseconds=milliseconds)
+
 @app.route('/update_pitstops', methods=['GET', 'POST'])
 @csrf.exempt
 def update_pitstops():   
@@ -494,10 +553,10 @@ def update_pitstops():
    return jsonify(pitstops)
 
 def format_gap(td):
-    hours, remainder = divmod(td.seconds, 3600)
-    minutes, seconds = divmod(remainder, 60)
-    milliseconds = td.microseconds // 1000
-    return '{:02}:{:02}.{:03}'.format(int(minutes), int(seconds), milliseconds)
+   hours, remainder = divmod(td.seconds, 3600)
+   minutes, seconds = divmod(remainder, 60)
+   milliseconds = td.microseconds // 1000
+   return '{:02}:{:02}.{:03}'.format(int(minutes), int(seconds), milliseconds)
 
 def calculate_interval(data):
    # create array to store gaps. 
@@ -518,7 +577,6 @@ def calculate_interval(data):
       time_diffs.append(race_order)
       # set previous value to current value for next calculation. 
       prev_time = curr_time
-
    return time_diffs
 
 # use this method to go to drivers page.

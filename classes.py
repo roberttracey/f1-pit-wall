@@ -132,3 +132,27 @@ class PitStopData:
             'duration': self._duration,
             'milliseconds': self._duration
         }
+    
+class PostPitStop:
+    def __init__(self, aheadDriver, aheadGap, behindDriver, behindGap, position, clearAir, average):
+        self._aheadDriver = aheadDriver
+        self._aheadGap = aheadGap
+        self._behindDriver = behindDriver
+        self._behindGap = behindGap
+        self._position = position
+        self._clearAir = clearAir
+        self._average = average
+
+    def __str__(self):
+        return f"(aheadDriver={self._aheadDriver}, aheadGap='{self._aheadGap}', behindDriver='{self._behindDriver}', behindGap='{self._behindGap}', position='{self._position}', clearAir='{self._clearAir}', average='{self._average}')"
+    
+    def as_dict(self):
+        return {
+            'aheadDriver': self._aheadDriver,
+            'aheadGap': self._aheadGap,
+            'behindDriver': self._behindDriver,
+            'behindGap': self._behindGap,
+            'position': self._position,
+            'clearAir': self._clearAir,
+            'average': self._average
+        }

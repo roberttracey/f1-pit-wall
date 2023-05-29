@@ -155,14 +155,14 @@
               <div class="col-xxl-4 col-md-6">
                 <div id="status-card" class="card info-card green-card">  
                   <div class="card-body">
-                    <h5 class="card-title">Track <span>| Flag</span></h5>  
+                    <h5 class="card-title">Track <span>| Status</span></h5>  
                     <div class="d-flex align-items-center">
                       <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
                         <i class="bi bi-flag"></i>
                       </div>
                       <div class="ps-3">
-                        <h6 id="track-status">Clear</h6>
-                        <span class="text-muted small pt-2 ps-1">status</span>  
+                        <h6 id="track-flag">Green</h6>
+                        <span id="track-status" class="text-muted small pt-2 ps-1">status</span>  
                       </div>
                     </div>
                   </div>
@@ -344,32 +344,8 @@
                   </div>  
                 </div>
               </div>    
-              <!-- End Laps Graph -->  
+              <!-- End Laps Graph --> 
 
-              <!-- Start Pitstops Table -->
-              <div class="col-12">
-                <div class="card top-selling overflow-auto">
-                  <div class="card-body pb-0">
-                    <h5 id="pitstops-table-title" class="card-title">Pit Stops <span>| Total</span></h5>
-                    <table class="table table-borderless">
-                      <thead>
-                        <tr>
-                          <th scope="col">#</th>
-                          <th scope="col">Driver</th>
-                          <th scope="col">Stop</th>
-                          <th scope="col">Lap</th>
-                          <th scope="col">Duration</th>
-                        </tr>
-                      </thead>
-                      <tbody id="pitstops-table"> 
-                        <!-- Rows Automaticcaly Updated Using AJAX -->              
-                      </tbody>
-                    </table>                    
-                  </div>
-                </div>
-              </div>
-              <!-- End Pitstops Table -->
-              
               <!-- Start Fastest Sector 1 -->
               <div class="col-xxl-4 col-md-6">    
                 <div class="card info-card">
@@ -455,7 +431,32 @@
                   </div> 
                 </div>                  
               </div>
-              <!-- End Fastest Sector 3 -->           
+              <!-- End Fastest Sector 3 -->    
+              
+              <!-- Start Pitstops Table -->
+              <div class="col-12">
+                <div class="card top-selling overflow-auto">
+                  <div class="card-body pb-0">
+                    <h5 id="pitstops-table-title" class="card-title">Pit Stops <span>| Total</span></h5>
+                    <table class="table table-borderless">
+                      <thead>
+                        <tr>
+                          <th scope="col">#</th>
+                          <th scope="col">Driver</th>
+                          <th scope="col">Stop</th>
+                          <th scope="col">Lap</th>
+                          <th scope="col">Duration</th>
+                        </tr>
+                      </thead>
+                      <tbody id="pitstops-table"> 
+                        <!-- Rows Automaticcaly Updated Using AJAX -->              
+                      </tbody>
+                    </table>                    
+                  </div>
+                </div>
+              </div>
+              <!-- End Pitstops Table -->
+
             </div>
           </div>
           <!-- End Left side columns -->
@@ -489,24 +490,7 @@
                 <!-- End Race Order Table -->
                 </div>
               </div>  
-              <!-- End Race Order -->
-
-              <!-- Start Pit Stops Time Card -->
-              <div class="card info-card red-card">                
-                <div class="card-body">
-                  <h5 class="card-title">Pit Stops <span>| Average Time</span></h5>  
-                  <div class="d-flex align-items-center">
-                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                      <i class="bi bi-sign-stop"></i>
-                    </div>
-                    <div class="ps-3">
-                      <h6 id="pitstops-average">0</h6>
-                      <span class="text-muted small pt-2 ps-1">seconds</span>  
-                    </div>
-                  </div>
-                </div>  
-              </div>
-              <!-- End Pit Stops Time Card -->
+              <!-- End Race Order -->              
         
               <!-- Start Fastest Laps -->
               <div class="card">                
@@ -534,6 +518,59 @@
                 </div>              
               </div>
               <!-- End Fastest Laps -->
+
+              <!-- Start Pit Stops Time Card -->
+              <div class="card info-card">                
+                <div class="card-body blue-card">
+                  <h5 class="card-title">Pit Stops <span>| Average Time Lost</span></h5>  
+                  <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                      <i class="bi bi-stopwatch"></i>
+                    </div>
+                    <div class="ps-3">
+                      <h6 id="pitstops-average">0</h6>
+                      <span class="text-muted small pt-2 ps-1">seconds</span>  
+                    </div>
+                  </div>
+                </div> 
+                <div id="new-position-card" class="card-body red-card">
+                  <h5 class="card-title">Pit Now <span>| Position & Clear Air</span></h5>  
+                  <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                      <i class="bi bi-distribute-vertical"></i>
+                    </div>
+                    <div class="ps-3">
+                      <h6 id="after-pitstop-position">N/A</h6>
+                      <span class="text-muted small pt-2 ps-1">position</span>  
+                    </div>
+                  </div>
+                </div> 
+                <div class="card-body purple-card">
+                  <h5 class="card-title">Ahead <span>| Driver & Gap</span></h5>  
+                  <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                      <i class="bi bi-person-up"></i>
+                    </div>
+                    <div class="ps-3">
+                      <h6 id="after-pitstop-ahead-driver">N/A</h6>
+                      <span id="after-pitstop-ahead-gap" class="text-muted small pt-2 ps-1">N/A</span>  
+                    </div>
+                  </div>
+                </div>  
+                <div class="card-body yellow-card">
+                  <h5 class="card-title">Behind <span>| Driver & Gap</span></h5>  
+                  <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                      <i class="bi bi-person-down"></i>
+                    </div>
+                    <div class="ps-3">
+                      <h6 id="after-pitstop-behind-driver">N/A</h6>
+                      <span id="after-pitstop-behind-gap" class="text-muted small pt-2 ps-1">N/A</span>  
+                    </div>
+                  </div>
+                </div> 
+              </div>
+              <!-- End Pit Stops Time Card -->
           </div>
           <!-- End Right side columns -->  
         </div>        
@@ -573,41 +610,46 @@
                 var statusCard = document.getElementById('status-card');                
                 var status = '';
                 var statusId = data[0].trackstatus;
-                console.log('statusId:' + statusId)
                 switch (statusId) {
                   case 2:
                     // set status text.                     
-                    $("h6#track-status").html('Yellow Flag');
+                    $("span#track-status").html('Hazard on track');
+                    $("h6#track-flag").html('Yellow');
                     // change the class to update colour. 
                     statusCard.className = 'card info-card yellow-card';
                     break;
                   case 4:
                     // set status text.                     
-                    $("h6#track-status").html('Safety Car');
+                    $("span#track-status").html('Safety Car');
+                    $("h6#track-flag").html('Yellow');
                     // change the class to update colour. 
                     statusCard.className = 'card info-card yellow-card';
                     break;
                   case 5:
                     // set status text.                     
-                    $("h6#track-status").html('Red Flag');
+                    $("span#track-status").html('Session is suspended');
+                    $("h6#track-flag").html('Red');
                     // change the class to update colour. 
                     statusCard.className = 'card info-card red-card';
                     break;
                   case 6:
                     // set status text.                     
-                    $("h6#track-status").html('VSC');
+                    $("span#track-status").html('VSC');
+                    $("h6#track-flag").html('Yellow');
                     // change the class to update colour. 
                     statusCard.className = 'card info-card yellow-card';
                     break;
                   case 7:
                     // set status text.                     
-                    $("h6#track-status").html('VSC Ending');
+                    $("span#track-status").html('VSC Ending');
+                    $("h6#track-flag").html('Yellow');
                     // change the class to update colour. 
                     statusCard.className = 'card info-card yellow-card';
                     break;
                   default:
                     // set status text.                     
-                    $("h6#track-status").html('Clear');
+                    $("span#track-status").html('Normal racing conditions');
+                    $("h6#track-flag").html('Green');
                     // change the class to update colour. 
                     statusCard.className = 'card info-card green-card';
                 }
@@ -617,7 +659,7 @@
                       // update position card. 
                       $("h6#driver-position").html(getOrdinalNum(pos));
                       // set colour on race order table. 
-                      colour = '<tr class="table-success">';
+                      colour = '<tr class="table-secondary">';
                     } else {
                       colour = '<tr>';
                     }
@@ -657,12 +699,17 @@
                 var html = "";
                 var pos = 1;
                 var driverId = '{{ driver.code }}';
-                var title = "Fastest Laps <span> | " + data[0].driver + "</span>";
+                var title = '';
+                if (data.length > 0) {
+                  title = "Fastest Laps <span> | " + data[0].driver + "</span>";
+                } else {
+                  title = "Fastest Laps <span> | Fastest </span>";
+                }
                 $.each(data, function(key, value) {
                   // if selected driver.
                   if (value.driver === driverId) {
                       // set colour on race order table. 
-                      html += '<tr class="table-success">' +
+                      html += '<tr class="table-secondary">' +
                                 '<td>' + pos + '</td>' + 
                                 '<td>' + value.driver + '</td>' +
                                 '<td>' + formatTimeDelta(value.laptime) + '</td>' +
@@ -694,12 +741,17 @@
                 var html = "";
                 var pos = 1;
                 var driverId = '{{ driver.code }}';
-                var title = "Sector 1 <span> | " + data[0].driver + "</span>"
+                var title = '';
+                if (data.length > 0) {
+                  title = "Sector 1 <span> | " + data[0].driver + "</span>";
+                } else {
+                  title = "Sector 1 <span> | Fastest </span>";
+                }
                 $.each(data, function(key, value) {
                   // if selected driver.
                   if (value.driver === driverId) {
                       // set colour on race order table. 
-                      html += '<tr class="table-success">' +
+                      html += '<tr class="table-secondary">' +
                                 '<td>' + pos + '</td>' + 
                                 '<td>' + value.driver + '</td>' +
                                 '<td>' + formatTimeDelta(value.laptime) + '</td>' +
@@ -731,12 +783,17 @@
                 var html = "";
                 var pos = 1;
                 var driverId = '{{ driver.code }}';
-                var title = "Sector 2 <span> | " + data[0].driver + "</span>"
+                var title = '';
+                if (data.length > 0) {
+                  title = "Sector 2 <span> | " + data[0].driver + "</span>";
+                } else {
+                  title = "Sector 2 <span> | Fastest </span>";
+                }
                 $.each(data, function(key, value) {
                   // if selected driver.
                   if (value.driver === driverId) {
                       // set colour on race order table. 
-                      html += '<tr class="table-success">' +
+                      html += '<tr class="table-secondary">' +
                                 '<td>' + pos + '</td>' + 
                                 '<td>' + value.driver + '</td>' +
                                 '<td>' + formatTimeDelta(value.laptime) + '</td>' +
@@ -768,12 +825,17 @@
                 var html = "";
                 var pos = 1;
                 var driverId = '{{ driver.code }}';
-                var title = "Sector 3 <span> | " + data[0].driver + "</span>"
+                var title = '';
+                if (data.length > 0) {
+                  title = "Sector 3 <span> | " + data[0].driver + "</span>";
+                } else {
+                  title = "Sector 3 <span> | Fastest </span>";
+                }
                 $.each(data, function(key, value) {
                   // if selected driver.
                   if (value.driver === driverId) {
                       // set colour on race order table. 
-                      html += '<tr class="table-success">' +
+                      html += '<tr class="table-secondary">' +
                                 '<td>' + pos + '</td>' + 
                                 '<td>' + value.driver + '</td>' +
                                 '<td>' + formatTimeDelta(value.laptime) + '</td>' +
@@ -815,16 +877,38 @@
                           '</tr>';
                   // increment position. 
                   pos++;
-                });
-                // calculate the average pit time.     
-                var average = 0;           
-                if (data.length > 0) {
-                  var sum = data.reduce((acc, val) => acc + parseInt(val.milliseconds), 0);
-                  average = sum / data.length;
-                }                 
+                });           
                 $("tbody#pitstops-table").html(html);
-                $("h5#pitstops-table-title").html(title);
-                $("h6#pitstops-average").html(average.toFixed(2));
+                $("h5#pitstops-table-title").html(title);                
+              }
+            });
+          }, intervalTime);
+        }); 
+
+        // use this method to get a drivers position and gap if they pit. 
+        $(document).ready(function() {
+          setInterval(function() {
+            var afterPitCard = document.getElementById('new-position-card'); 
+            $.ajax({
+              url: "{{ url_for('post_pit_gap') }}",
+              success: function(data) { 
+                // if data found. 
+                if (data !== null && data !== undefined) {
+                  $("h6#after-pitstop-position").html(getOrdinalNum(data.position));
+                  $("h6#after-pitstop-ahead-driver").html(data.aheadDriver);
+                  $("span#after-pitstop-ahead-gap").html(data.aheadGap);
+                  $("h6#after-pitstop-behind-driver").html(data.behindDriver);
+                  $("span#after-pitstop-behind-gap").html(data.behindGap);
+                  $("h6#pitstops-average").html(data.average);
+                  // if driver has clear air. 
+                  if (data.clearAir) {
+                    // set icon colour. 
+                    afterPitCard.className = 'card-body green-card';
+                  } else {
+                    // set icon colour. 
+                    afterPitCard.className = 'card-body red-card';
+                  }
+                }                     
               }
             });
           }, intervalTime);

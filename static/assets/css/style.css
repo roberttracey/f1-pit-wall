@@ -836,13 +836,23 @@ h6 {
 }
 
 .dashboard .red-card .card-icon {
-  color: #FF1801;
-  background: #ffecdf;
+  color: #dc3545;
+  background: #f8e9eb;
+}
+
+.dashboard .purple-card .card-icon {
+  color: #9c27b0;
+  background: #e1bee7;
 }
 
 .dashboard .yellow-card .card-icon {
-  color: #FFF700;
-  background: #feffd0;
+  color: #ffc107;
+  background: #fff9e6;
+}
+
+.dashboard .blue-card .card-icon {
+  color: #007bff;
+  background: #e7f0fd;
 }
 
 .dashboard .green-card .card-icon {
