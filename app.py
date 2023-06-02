@@ -690,14 +690,8 @@ def result():
    
    return render_template('result.html', driver_result=driver_result, constructor_result=constructor_result)
 
-# use this method to return to standing page.
-@app.route('/settings', methods=['GET', 'POST'])
-@csrf.exempt
-def settings():
-   print('Navigate to settings.html')
-   return render_template('settings.html')
 
-# use this method to return to standing page.
+# use this method to import lap data.
 @app.route('/import_laps', methods=['POST'])
 @csrf.exempt
 def import_laps():
@@ -1169,4 +1163,5 @@ def get_statusid(status_ref):
    return status.statusId
 
 if __name__ == '__main__':
+   app.debug = True
    app.run()
