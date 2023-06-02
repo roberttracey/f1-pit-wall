@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 77b82b389c5b
+Revision ID: 5489576e2849
 Revises: 
-Create Date: 2023-06-02 20:51:11.113880
+Create Date: 2023-06-02 21:14:29.296569
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '77b82b389c5b'
+revision = '5489576e2849'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -170,7 +170,7 @@ def upgrade():
     sa.Column('lap', sa.Integer(), nullable=False),
     sa.Column('time', sa.String(length=255), nullable=True),
     sa.Column('duration', sa.String(length=255), nullable=True),
-    sa.Column('milliseconds', sa.String(length=255), nullable=True),
+    sa.Column('milliseconds', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['driverId'], ['drivers.driverId'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['raceId'], ['races.raceId'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('pitstopId')
@@ -203,7 +203,7 @@ def upgrade():
     sa.Column('points', sa.Float(), nullable=False),
     sa.Column('laps', sa.Integer(), nullable=False),
     sa.Column('time', sa.String(length=255), nullable=True),
-    sa.Column('milliseconds', sa.String(length=255), nullable=True),
+    sa.Column('milliseconds', sa.Integer(), nullable=True),
     sa.Column('fastestLap', sa.Integer(), nullable=True),
     sa.Column('rank', sa.Integer(), nullable=True),
     sa.Column('fastestLapTime', sa.String(length=255), nullable=True),
@@ -228,7 +228,7 @@ def upgrade():
     sa.Column('points', sa.Float(), nullable=False),
     sa.Column('laps', sa.Integer(), nullable=False),
     sa.Column('time', sa.String(length=255), nullable=True),
-    sa.Column('milliseconds', sa.String(length=255), nullable=True),
+    sa.Column('milliseconds', sa.Integer(), nullable=True),
     sa.Column('fastestLap', sa.Integer(), nullable=True),
     sa.Column('fastestLapTime', sa.String(length=255), nullable=True),
     sa.Column('statusId', sa.Integer(), nullable=False),

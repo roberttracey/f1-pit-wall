@@ -161,7 +161,7 @@ class PitStop(db.Model):
     lap = Column(Integer, nullable=False)
     time = Column(String(255))
     duration = Column(String(255))
-    milliseconds = Column(String(255))
+    milliseconds = Column(Integer, nullable=True, default=0)
 
     def __str__(self):
         return self.raceId
@@ -246,7 +246,7 @@ class Result(db.Model):
     points = Column(Float, nullable=False, default=0)
     laps = Column(Integer, nullable=False, default=0)
     time = Column(String(255))
-    milliseconds = Column(String(255))
+    milliseconds = Column(Integer, nullable=True, default=0)
     fastestLap = Column(Integer)
     rank = Column(Integer, default=0)
     fastestLapTime = Column(String(255))
@@ -271,7 +271,7 @@ class SprintResult(db.Model):
     points = Column(Float, nullable=False, default=0)
     laps = Column(Integer, nullable=False, default=0)
     time = Column(String(255))
-    milliseconds = Column(String(255))
+    milliseconds = Column(Integer, nullable=True, default=0)
     fastestLap = Column(Integer)
     fastestLapTime = Column(String(255))
     statusId = Column(Integer, ForeignKey('status.statusId', ondelete="CASCADE"), nullable=False, default=0)
