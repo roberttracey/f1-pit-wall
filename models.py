@@ -114,7 +114,7 @@ class Lap(db.Model):
     speedfl  = Column(Float)
     speedst  = Column(Float)
     ispersonalbest = Column(Boolean)
-    compound = Column(String(10))
+    compound = Column(String(15))
     tyrelife  = Column(Float)
     freshtyre = Column(Boolean)
     team = Column(String(255))
