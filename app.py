@@ -1095,10 +1095,11 @@ def get_pitstops(year, round):
             pitstop.duration = pit['duration']
             pitstop.milliseconds = remove_colon_and_dot(pit['duration'])
             # add to db.
-            db.session.add(pitstop)      
+            with db.session.no_autoflush:
+               db.session.add(pitstop)      
          # increase offset.
          offset += 30
-         # commit changes to db. 
+         # commit changes to db.
          db.session.commit()
       else:
          length = 0

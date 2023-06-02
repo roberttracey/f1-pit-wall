@@ -154,9 +154,9 @@ class TrackStatus(db.Model):
 
 class PitStop(db.Model):
     __tablename__ = 'pitstops'
-    raceId = Column(Integer, ForeignKey('races.raceId', ondelete="CASCADE"), nullable=False, default=0, primary_key=True)
-    driverId = Column(Integer, ForeignKey('drivers.driverId', ondelete="CASCADE"), nullable=False, primary_key=True)
-    stop = Column(Integer, nullable=False, primary_key=True)
+    raceId = Column(Integer, ForeignKey('races.raceId', ondelete="CASCADE"), nullable=False, default=0)
+    driverId = Column(Integer, ForeignKey('drivers.driverId', ondelete="CASCADE"), nullable=False)
+    stop = Column(Integer, nullable=False)
     lap = Column(Integer, nullable=False)
     time = Column(String(255))
     duration = Column(String(255))
