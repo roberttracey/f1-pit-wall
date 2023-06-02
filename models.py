@@ -118,8 +118,8 @@ class Lap(db.Model):
     tyrelife  = Column(Float)
     freshtyre = Column(Boolean)
     team = Column(String(255))
-    lapstarttime = Column(String(22))
-    lapstartdate = Column(String(22))
+    lapstarttime = Column(String(255))
+    lapstartdate = Column(Date)
     trackstatus = Column(Integer)
     isaccurate = Column(Boolean)    
 
