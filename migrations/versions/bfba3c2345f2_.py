@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: e5e3defd6265
+Revision ID: bfba3c2345f2
 Revises: 
-Create Date: 2023-06-02 17:53:12.117173
+Create Date: 2023-06-02 18:58:47.936913
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'e5e3defd6265'
+revision = 'bfba3c2345f2'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -163,16 +163,17 @@ def upgrade():
     sa.PrimaryKeyConstraint('lapId')
     )
     op.create_table('pitstops',
+    sa.Column('pitstopId', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('raceId', sa.Integer(), nullable=False),
     sa.Column('driverId', sa.Integer(), nullable=False),
     sa.Column('stop', sa.Integer(), nullable=False),
     sa.Column('lap', sa.Integer(), nullable=False),
     sa.Column('time', sa.String(length=255), nullable=True),
     sa.Column('duration', sa.String(length=255), nullable=True),
-    sa.Column('milliseconds', sa.Integer(), nullable=True),
+    sa.Column('milliseconds', sa.String(length=255), nullable=True),
     sa.ForeignKeyConstraint(['driverId'], ['drivers.driverId'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['raceId'], ['races.raceId'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('raceId', 'driverId', 'stop')
+    sa.PrimaryKeyConstraint('pitstopId')
     )
     op.create_table('qualifying',
     sa.Column('qualifyId', sa.Integer(), autoincrement=True, nullable=False),
@@ -202,10 +203,10 @@ def upgrade():
     sa.Column('points', sa.Float(), nullable=False),
     sa.Column('laps', sa.Integer(), nullable=False),
     sa.Column('time', sa.String(length=255), nullable=True),
-    sa.Column('milliseconds', sa.Integer(), nullable=True),
+    sa.Column('milliseconds', sa.String(length=255), nullable=True),
     sa.Column('fastestLap', sa.Integer(), nullable=True),
     sa.Column('rank', sa.Integer(), nullable=True),
-    sa.Column('fastestLapTime', sa.Integer(), nullable=True),
+    sa.Column('fastestLapTime', sa.String(length=255), nullable=True),
     sa.Column('fastestLapSpeed', sa.Integer(), nullable=True),
     sa.Column('statusId', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['constructorId'], ['constructors.constructorId'], ondelete='CASCADE'),
@@ -227,7 +228,7 @@ def upgrade():
     sa.Column('points', sa.Float(), nullable=False),
     sa.Column('laps', sa.Integer(), nullable=False),
     sa.Column('time', sa.String(length=255), nullable=True),
-    sa.Column('milliseconds', sa.Integer(), nullable=True),
+    sa.Column('milliseconds', sa.String(length=255), nullable=True),
     sa.Column('fastestLap', sa.Integer(), nullable=True),
     sa.Column('fastestLapTime', sa.String(length=255), nullable=True),
     sa.Column('statusId', sa.Integer(), nullable=False),
