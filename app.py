@@ -103,42 +103,43 @@ app.jinja_env.filters['ordinal'] = ordinal
 # use this method to return to home page.
 @app.route('/')
 @csrf.exempt
-def index():   
+def index(): 
+   # before intial import, this would fail. if so, just load page without data. 
+   try:
+      # define sql query
+      query01 = 'SELECT DISTINCT r.raceid, r.date, r.name FROM laps l, races r WHERE l.raceid = r.raceid ORDER BY r.raceid DESC LIMIT 8;'
+      query01 = text(query01)
+      recent_races = db.session.execute(query01).fetchall()
+      print('Races:', len(recent_races))
+      
+      # define sql query to get valid drivers (i.e. have race laps).
+      query02 = '''SELECT driverId, forename, surname, code
+                        FROM   drivers
+                        WHERE  code IN (SELECT DISTINCT driver
+                                       FROM laps);'''
+      
+      query02 = text(query02)
+      valid_drivers = db.session.execute(query02).fetchall()
+      # get race count.
+      # races_count = Lap.query.group_by(Lap.raceId).count()
+      races_count = Race.query.group_by(Race.raceId).count()
+      # get driver count.
+      driver_count = Driver.query.group_by(Driver.driverId).count()
+      # get teams count.
+      team_count = Constructor.query.group_by(Constructor.constructorId).count()
+      # get last race in laps. 
+      last_lap = Lap.query.order_by(Lap.lapId.desc()).limit(1).first()
+      # get last race based on last lap. 
+      last_race = Race.query.where(Race.raceId == last_lap.raceId).first()   
+      # get preferences. 
+      preferences = Preference.query.where(Preference.preferenceId == 1).limit(1).first()     
+      # print to console. 
+      print('Request for index page received')
+      # go to index page, and send race data. 
+      return render_template('index.html', recent_races=recent_races, races_count=races_count, driver_count=driver_count, team_count=team_count, valid_drivers=valid_drivers, default_driver=preferences.driverId, default_interval=preferences.intervalTime, last_race=last_race)
+   except:
+      return render_template('index.html')    
    
-   # get preferences. 
-   preferences = Preference.query.where(Preference.preferenceId == 1).limit(1).first()
-   # define sql query
-   query01 = 'SELECT DISTINCT r.raceid, r.date, r.name FROM laps l, races r WHERE l.raceid = r.raceid ORDER BY r.raceid DESC LIMIT 8;'
-   query01 = text(query01)
-   recent_races = db.session.execute(query01).fetchall()
-   print('Races:', len(recent_races))
-   
-   # define sql query to get valid drivers (i.e. have race laps).
-   query02 = '''SELECT driverId, forename, surname, code
-                     FROM   drivers
-                     WHERE  code IN (SELECT DISTINCT driver
-                                    FROM laps);'''
-   
-   query02 = text(query02)
-   valid_drivers = db.session.execute(query02).fetchall()
-
-   # get race count.
-   # races_count = Lap.query.group_by(Lap.raceId).count()
-   races_count = Race.query.group_by(Race.raceId).count()
-   # get driver count.
-   driver_count = Driver.query.group_by(Driver.driverId).count()
-   # get teams count.
-   team_count = Constructor.query.group_by(Constructor.constructorId).count()
-   # get last race in laps. 
-   last_lap = Lap.query.order_by(Lap.lapId.desc()).limit(1).first()
-   # get last race based on last lap. 
-   last_race = Race.query.where(Race.raceId == last_lap.raceId).first()   
-     
-   # print to console. 
-   print('Request for index page received')
-   # go to index page, and send race data. 
-   return render_template('index.html', recent_races=recent_races, races_count=races_count, driver_count=driver_count, team_count=team_count, valid_drivers=valid_drivers, default_driver=preferences.driverId, default_interval=preferences.intervalTime, last_race=last_race)
-
 
 @app.route('/favicon.ico')
 def favicon():
