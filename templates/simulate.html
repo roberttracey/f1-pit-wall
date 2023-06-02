@@ -324,7 +324,7 @@
                         chart.render();
                         
                         // use this emthod to get lap data at an set interval. 
-                        setInterval(function() {
+                        var intervalId10 = setInterval(function() {
                           // set mehtod url. 
                           var url = "{{ url_for('update_lap_graph') }}";
                           // use ajax to get data. 
@@ -338,6 +338,7 @@
                             }])
                           });                         	  
                         }, intervalTime);
+                        intervalIds.push(intervalId10);
                       });                           
                     </script>
                     <!-- End Line Chart -->  
@@ -579,6 +580,9 @@
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
       <script>  
 
+        // create array to track all intervals.
+        var intervalIds = [];
+
         // set the countdown duration in seconds.
         var duration = intervalTime / 1000;
         // get the countdown element.
@@ -594,16 +598,18 @@
             duration += intervalTime / 1000;           
           }        
         }, 1000);
+        intervalIds.push(countdown);
 
         // use this method to get the current race order. 
         $(document).ready(function() {
-          setInterval(function() {
+          var intervalId1 = setInterval(function() {
             $.ajax({
               url: "{{ url_for('update_race_order') }}",
               success: function(data) {
                 var html = "";
                 var pos = 1;
                 var driverId = '{{ driver.code }}';
+                var total_laps = '{{ total_laps }}';
                 var colour = '';
                 var title = "Race Order <span> | " + data[0].lapnumber + " of {{ total_laps }}</span>"
                 // get status card. 
@@ -685,14 +691,20 @@
                 $("tbody#race-order-table").html(html);
                 $("h5#race-order-title").html(title);
                 removeElement("race-order-loading");
+                // check if race is over. 
+                if (data[0].lapnumber == total_laps) {
+                  // go to resutls page. 
+                  results();
+                }
               }
             });
           }, intervalTime);
+          intervalIds.push(intervalId1);
         });
                 
         // use this method to get the current fastest laps. 
         $(document).ready(function() {
-          setInterval(function() {
+          var intervalId2 = setInterval(function() {
             $.ajax({
               url: "{{ url_for('update_fastest_laps') }}",
               success: function(data) {
@@ -730,11 +742,12 @@
               }
             });
           }, intervalTime);
+          intervalIds.push(intervalId2);
         }); 
 
         // use this method to get the current fastest sector. 
         $(document).ready(function() {
-          setInterval(function() {
+          var intervalId3 = setInterval(function() {
             $.ajax({
               url: "{{ url_for('update_fastest_sector_one') }}",
               success: function(data) {
@@ -772,11 +785,12 @@
               }
             });
           }, intervalTime);
+          intervalIds.push(intervalId3);
         }); 
 
          // use this method to get the current fastest sector. 
          $(document).ready(function() {
-          setInterval(function() {
+          var intervalId4 = setInterval(function() {
             $.ajax({
               url: "{{ url_for('update_fastest_sector_two') }}",
               success: function(data) {
@@ -814,11 +828,12 @@
               }
             });
           }, intervalTime);
+          intervalIds.push(intervalId4);
         }); 
 
          // use this method to get the current fastest sector. 
          $(document).ready(function() {
-          setInterval(function() {
+          var intervalId5 = setInterval(function() {
             $.ajax({
               url: "{{ url_for('update_fastest_sector_three') }}",
               success: function(data) {
@@ -856,11 +871,12 @@
               }
             });
           }, intervalTime);
+          intervalIds.push(intervalId5);
         }); 
 
         // use this method to get pit stops. 
         $(document).ready(function() {
-          setInterval(function() {
+          var intervalId6 = setInterval(function() {
             $.ajax({
               url: "{{ url_for('update_pitstops') }}",
               success: function(data) {
@@ -883,11 +899,12 @@
               }
             });
           }, intervalTime);
+          intervalIds.push(intervalId6);
         }); 
 
         // use this method to get a drivers position and gap if they pit. 
         $(document).ready(function() {
-          setInterval(function() {
+          var intervalId7 = setInterval(function() {
             var afterPitCard = document.getElementById('new-position-card'); 
             $.ajax({
               url: "{{ url_for('post_pit_gap') }}",
@@ -912,11 +929,12 @@
               }
             });
           }, intervalTime);
+          intervalIds.push(intervalId7);
         }); 
 
         // use this method to get a drivers attack battle. 
         $(document).ready(function() {
-          setInterval(function() {
+          var intervalId8 = setInterval(function() {
             $.ajax({
               url: "{{ url_for('attack_battle') }}",
               success: function(data) {
@@ -942,11 +960,12 @@
               }
             });
           }, intervalTime);
+          intervalIds.push(intervalId8);
         }); 
 
         // use this method to get a drivers defence battle. 
         $(document).ready(function() {
-          setInterval(function() {
+          var intervalId9 = setInterval(function() {
             $.ajax({
               url: "{{ url_for('defence_battle') }}",
               success: function(data) {
@@ -972,7 +991,34 @@
               }
             });
           }, intervalTime);
+          intervalIds.push(intervalId9);
         }); 
+
+        // stop all intervals.
+        function stopAllIntervals() {
+          for (var i = 0; i < intervalIds.length; i++) {
+            clearInterval(intervalIds[i]);
+          }
+        }
+        
+        function results() {
+          $.ajax({
+            url: "{{ url_for('result') }}",
+            method: 'GET',
+            success: function(response) {
+              // Replace the current page with the new page
+              document.open();
+              document.write(response);
+              document.close();
+              // stop simulation. 
+              stopAllIntervals();
+            },
+            error: function(error) {
+              // Handle any errors
+              console.log(error);
+            }
+          });
+        }
 
         function formatTimeDelta(delta) {
           var td = parseTimeDelta(delta);

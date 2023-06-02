@@ -641,6 +641,55 @@ def standing():
    constructor_standings = query_db(constructor_query)
    return render_template('standing.html', driver_standings=driver_standings, constructor_standings=constructor_standings)
 
+# use this method at the end of a race to go the the results page. 
+@app.route('/result', methods=['GET', 'POST'])
+@csrf.exempt
+def result():
+   print('Navigate to result.html')
+   # get new simulation values. 
+   global simulation
+   raceId = simulation.get_raceId()
+   # create engine. 
+   engine = create_engine(app.config.get('DATABASE_URI'))
+   # define sql query
+   query01 = '''SELECT d.forename,
+                              d.surname,
+                              d.code,
+                              r.position,
+                              r.points
+                        FROM   results r
+                              INNER JOIN drivers d
+                                       ON r.driverid = d.driverid
+                        WHERE  raceid = {}
+                        ORDER  BY r.position;'''.format(raceId)
+   
+   query01 = text(query01)
+   driver_result = []
+   # execute query
+   with engine.connect() as conn:
+      driver_result = conn.execute(query01)
+   
+   # define sql query
+   query02 = '''SELECT c.name,
+                        Sum(cr.points) AS total_points
+                  FROM   constructorresults cr
+                        INNER JOIN constructors c
+                                 ON cr.constructorid = c.constructorid
+                  WHERE  raceid = {}
+                  GROUP  BY c.name
+                  ORDER  BY total_points DESC;'''.format(raceId)
+   
+   query02 = text(query02)
+   constructor_result = []
+   # execute query
+   with engine.connect() as conn:
+      constructor_result = conn.execute(query02)
+   
+   # clean up database connection.
+   engine.dispose()
+   
+   return render_template('result.html', driver_result=driver_result, constructor_result=constructor_result)
+
 # use this method to return to standing page.
 @app.route('/settings', methods=['GET', 'POST'])
 @csrf.exempt
