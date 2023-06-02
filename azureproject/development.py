@@ -15,5 +15,3 @@ TIME_ZONE = 'UTC'
 
 STATICFILES_DIRS = (str(BASE_DIR.joinpath('static')),)
 STATIC_URL = 'static/'
-
-print('Database:', DATABASE_URI)

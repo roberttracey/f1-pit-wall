@@ -14,8 +14,6 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'flask-insecure-7ppocbnx@w71dcuinn*t^_mzal(
 DATABASE_URI = 'mysql://{dbuser}:{dbpass}@{dbhost}/{dbname}'.format(
     dbuser='roberttracey',
     dbpass='i.r8D8UgyeltJ_wC',
-    dbhost='f1-pit-wall.mysql.database.azure.com',
-    dbname='f1-pit-wall-db'
+    dbhost='f1db.mysql.database.azure.com',
+    dbname='f1db'
 )
-
-print('Database:', DATABASE_URI)
