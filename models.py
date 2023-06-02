@@ -154,6 +154,7 @@ class TrackStatus(db.Model):
 
 class PitStop(db.Model):
     __tablename__ = 'pitstops'
+    pitstopId = Column(Integer, primary_key=True, autoincrement=True)
     raceId = Column(Integer, ForeignKey('races.raceId', ondelete="CASCADE"), nullable=False, default=0)
     driverId = Column(Integer, ForeignKey('drivers.driverId', ondelete="CASCADE"), nullable=False)
     stop = Column(Integer, nullable=False)
