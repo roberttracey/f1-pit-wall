@@ -696,84 +696,80 @@ def import_laps():
       get_results(r.year, r.round)
       # get sprint results
       get_sprint_results(r.year, r.round)
-      # if race is cancelled (like round 6 2023 - EMILIA-ROMAGNA), no laps will be found. add try / catch to handle this problem. 
-      try:
-         # print(r.year, r.round, r.date)
-         session = fastf1.get_session(r.year, r.round, 'Race')
-         print('Importing:', r.year, r.name)
-         # load the session
-         session.load()
-         # get laps for given session
-         laps = session.laps
-         # store session data in dataframe
-         df = pd.DataFrame(laps)
-         # df = df.reset_index()  # make sure indexes pair with number of rows
-         for i in df.index:
-            lap = Lap()
-            lap.raceId = r.raceId
-            lap.time = df['Time'][i]
-            lap.driver = df['Driver'][i]
-            lap.drivernumber = df['DriverNumber'][i]
-            lap.laptime = df['LapTime'][i]
-            lap.lapnumber = df['LapNumber'][i]
-            lap.stint = df['Stint'][i]
-            lap.pitouttime = df['PitOutTime'][i]
-            lap.pitintime = df['PitInTime'][i]
-            lap.sector1time = df['Sector1Time'][i]
-            lap.sector2time = df['Sector2Time'][i]
-            lap.sector3time = df['Sector3Time'][i]
-            lap.sector1sessiontime = df['Sector1SessionTime'][i]
-            lap.sector2sessiontime = df['Sector2SessionTime'][i]
-            lap.sector3sessiontime = df['Sector3SessionTime'][i]
-            # avoid 'nan' value as they are no allow in MySQL.
-            if math.isnan (df['SpeedI1'][i]):
-               lap.speedi1 = 0
-            else:
-               lap.speedi1 = df['SpeedI1'][i]
-            # lap.speedi2 = df['SpeedI2'][i]
-            if math.isnan (df['SpeedI2'][i]):
-               lap.speedi2 = 0
-            else:
-               lap.speedi2 = df['SpeedI2'][i]
-            # lap.speedfl = df['SpeedFL'][i]
-            if math.isnan (df['SpeedFL'][i]):
-               lap.speedfl = 0
-            else:
-               lap.speedfl = df['SpeedFL'][i]
-            # lap.speedst = df['SpeedST'][i]
-            if math.isnan (df['SpeedST'][i]):
-               lap.speedst = 0
-            else:
-               lap.speedst = df['SpeedST'][i]         
-            # lap.ispersonalbest = df['IsPersonalBest'][i]
-            if math.isnan (df['IsPersonalBest'][i]):
-               lap.ispersonalbest = 0
-            else:
-               lap.ispersonalbest = df['IsPersonalBest'][i]            
-            lap.compound = df['Compound'][i]
-            # lap.tyrelife = df['TyreLife'][i]
-            if math.isnan (df['TyreLife'][i]):
-               lap.tyrelife = 0
-            else:
-               lap.tyrelife = df['TyreLife'][i] 
-            # lap.freshtyre = df['FreshTyre'][i]
-            if math.isnan (df['FreshTyre'][i]):
-               lap.freshtyre = 0
-            else:
-               lap.freshtyre = df['FreshTyre'][i]  
-            lap.team = df['Team'][i]
-            lap.lapstarttime = df['LapStartTime'][i]
-            lap.lapstartdate = df['LapStartDate'][i]
-            lap.trackstatus = df['TrackStatus'][i]
-            # lap.isaccurate = df['IsAccurate'][i]
-            if math.isnan (df['IsAccurate'][i]):
-               lap.isaccurate = 0
-            else:
-               lap.isaccurate = df['IsAccurate'][i]
-            db.session.add(lap) 
-         db.session.commit()         
-      except:
-         pass    
+      # print(r.year, r.round, r.date)
+      session = fastf1.get_session(r.year, r.round, 'Race')
+      print('Importing:', r.year, r.name)
+      # load the session
+      session.load()
+      # get laps for given session
+      laps = session.laps
+      # store session data in dataframe
+      df = pd.DataFrame(laps)
+      # df = df.reset_index()  # make sure indexes pair with number of rows
+      for i in df.index:
+         lap = Lap()
+         lap.raceId = r.raceId
+         lap.time = df['Time'][i]
+         lap.driver = df['Driver'][i]
+         lap.drivernumber = df['DriverNumber'][i]
+         lap.laptime = df['LapTime'][i]
+         lap.lapnumber = df['LapNumber'][i]
+         lap.stint = df['Stint'][i]
+         lap.pitouttime = df['PitOutTime'][i]
+         lap.pitintime = df['PitInTime'][i]
+         lap.sector1time = df['Sector1Time'][i]
+         lap.sector2time = df['Sector2Time'][i]
+         lap.sector3time = df['Sector3Time'][i]
+         lap.sector1sessiontime = df['Sector1SessionTime'][i]
+         lap.sector2sessiontime = df['Sector2SessionTime'][i]
+         lap.sector3sessiontime = df['Sector3SessionTime'][i]
+         # avoid 'nan' value as they are no allow in MySQL.
+         if math.isnan (df['SpeedI1'][i]):
+            lap.speedi1 = 0
+         else:
+            lap.speedi1 = df['SpeedI1'][i]
+         # lap.speedi2 = df['SpeedI2'][i]
+         if math.isnan (df['SpeedI2'][i]):
+            lap.speedi2 = 0
+         else:
+            lap.speedi2 = df['SpeedI2'][i]
+         # lap.speedfl = df['SpeedFL'][i]
+         if math.isnan (df['SpeedFL'][i]):
+            lap.speedfl = 0
+         else:
+            lap.speedfl = df['SpeedFL'][i]
+         # lap.speedst = df['SpeedST'][i]
+         if math.isnan (df['SpeedST'][i]):
+            lap.speedst = 0
+         else:
+            lap.speedst = df['SpeedST'][i]         
+         # lap.ispersonalbest = df['IsPersonalBest'][i]
+         if math.isnan (df['IsPersonalBest'][i]):
+            lap.ispersonalbest = 0
+         else:
+            lap.ispersonalbest = df['IsPersonalBest'][i]            
+         lap.compound = df['Compound'][i]
+         # lap.tyrelife = df['TyreLife'][i]
+         if math.isnan (df['TyreLife'][i]):
+            lap.tyrelife = 0
+         else:
+            lap.tyrelife = df['TyreLife'][i] 
+         # lap.freshtyre = df['FreshTyre'][i]
+         if math.isnan (df['FreshTyre'][i]):
+            lap.freshtyre = 0
+         else:
+            lap.freshtyre = df['FreshTyre'][i]  
+         lap.team = df['Team'][i]
+         lap.lapstarttime = df['LapStartTime'][i]
+         lap.lapstartdate = df['LapStartDate'][i]
+         lap.trackstatus = df['TrackStatus'][i]
+         # lap.isaccurate = df['IsAccurate'][i]
+         if math.isnan (df['IsAccurate'][i]):
+            lap.isaccurate = 0
+         else:
+            lap.isaccurate = df['IsAccurate'][i]
+         db.session.add(lap) 
+      db.session.commit()  
 
    # return to home page.
    return redirect(url_for('index'))
