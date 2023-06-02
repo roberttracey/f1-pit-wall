@@ -100,19 +100,6 @@ def ordinal(value):
 app.jinja_env.filters['format_timedelta'] = format_timedelta
 app.jinja_env.filters['ordinal'] = ordinal
 
-# use this method to retrieve data using sql queries. 
-def query_db(query):
-   # create engine. 
-   engine = create_engine(app.config.get('DATABASE_URI'))
-   # define SQL query
-   query = text(query)
-   # execute query
-   with engine.connect() as conn:
-      result = conn.execute(query)
-   # clean up database connection
-   engine.dispose()
-   return result
-
 # use this method to return to home page.
 @app.route('/')
 @csrf.exempt
@@ -120,19 +107,20 @@ def index():
    try:
       # get preferences. 
       preferences = Preference.query.where(Preference.preferenceId == 1).limit(1).first()
-      print('preferences:', preferences)
       # define sql query
-      races_query = 'SELECT DISTINCT r.raceid, r.date, r.name FROM laps l, races r WHERE l.raceid = r.raceid ORDER BY r.raceid DESC LIMIT 8;'
-      # get data.
-      recent_races = query_db(races_query)
+      query01 = 'SELECT DISTINCT r.raceid, r.date, r.name FROM laps l, races r WHERE l.raceid = r.raceid ORDER BY r.raceid DESC LIMIT 8;'
+      query01 = text(query01)
+      recent_races = db.session.execute(query01).fetchall()
+      
       # define sql query to get valid drivers (i.e. have race laps).
-      driver_query = '''SELECT driverId, forename, surname, code
+      query02 = '''SELECT driverId, forename, surname, code
                         FROM   drivers
                         WHERE  code IN (SELECT DISTINCT driver
-                                       FROM   laps); '''
-      # get data.
-      valid_drivers = query_db(driver_query)
-      print('valid_drivers:', valid_drivers)
+                                       FROM laps);'''
+     
+      query02 = text(query02)
+      valid_drivers = db.session.execute(query02).fetchall()
+
       # get race count.
       races_count = Lap.query.group_by(Lap.raceId).count()
       # get driver count.
@@ -522,8 +510,6 @@ def update_pitstops():
    # get new simulation values. 
    lap = simulation.get_lap()
    raceId = simulation.get_raceId()
-   # create engine. 
-   engine = create_engine(app.config.get('DATABASE_URI'))
    # define SQL query
    query = '''SELECT d.code,
                      p.stop,
@@ -538,16 +524,13 @@ def update_pitstops():
                   ORDER  BY p.lap;'''.format(raceId, lap)
    query = text(query)
    # execute query
-   with engine.connect() as conn:
-      result = conn.execute(query)
+   result = db.session.execute(query).fetchall()
    # create array for data. 
    pitstops = []
    # loop pit stop data. 
    for pit in result:
       pitstop = PitStopData(pit.code, pit.stop, pit.lap, pit.duration, pit.milliseconds)
       pitstops.append(pitstop)
-   # clean up database connection.
-   engine.dispose()
    # format data for json. 
    pitstops = [row.as_dict() for row in pitstops]
    return jsonify(pitstops)
@@ -614,7 +597,7 @@ def standing():
    # get last race in laps. 
    last_lap = Lap.query.order_by(Lap.lapId.desc()).limit(1).first()
    # define sql query
-   driver_query = '''SELECT ds.position,
+   query01 = '''SELECT ds.position,
                      d.forename,
                      d.surname,
                      ds.wins,
@@ -625,9 +608,11 @@ def standing():
                WHERE  ds.raceid = {}
                ORDER  BY position;'''.format(last_lap.raceId)
    # get data.
-   driver_standings = query_db(driver_query)
+   query01 = text(query01)
+   driver_standings = db.session.execute(query01).fetchall()
+
    # define sql query
-   constructor_query = '''SELECT cs.position,
+   query02 = '''SELECT cs.position,
                                  c.name,
                                  c.nationality,
                                  cs.wins,
@@ -638,7 +623,8 @@ def standing():
                            WHERE  cs.raceid = {}
                            ORDER  BY position;'''.format(last_lap.raceId)
    # get data.
-   constructor_standings = query_db(constructor_query)
+   query02 = text(query02)
+   constructor_standings = db.session.execute(query02).fetchall()
    return render_template('standing.html', driver_standings=driver_standings, constructor_standings=constructor_standings)
 
 # use this method at the end of a race to go the the results page. 
@@ -649,8 +635,6 @@ def result():
    # get new simulation values. 
    global simulation
    raceId = simulation.get_raceId()
-   # create engine. 
-   engine = create_engine(app.config.get('DATABASE_URI'))
    # define sql query
    query01 = '''SELECT d.forename,
                               d.surname,
@@ -664,10 +648,7 @@ def result():
                         ORDER  BY r.position;'''.format(raceId)
    
    query01 = text(query01)
-   driver_result = []
-   # execute query
-   with engine.connect() as conn:
-      driver_result = conn.execute(query01)
+   driver_result = db.session.execute(query01).fetchall()
    
    # define sql query
    query02 = '''SELECT c.name,
@@ -680,14 +661,7 @@ def result():
                   ORDER  BY total_points DESC;'''.format(raceId)
    
    query02 = text(query02)
-   constructor_result = []
-   # execute query
-   with engine.connect() as conn:
-      constructor_result = conn.execute(query02)
-   
-   # clean up database connection.
-   engine.dispose()
-   
+   constructor_result = db.session.execute(query02).fetchall()   
    return render_template('result.html', driver_result=driver_result, constructor_result=constructor_result)
 
 
@@ -803,7 +777,7 @@ def import_laps():
    # return to home page.
    return redirect(url_for('index'))
 
-# use this method to return to standing page.
+# use this method to import local data. 
 @app.route('/import_data', methods=['POST'])
 @csrf.exempt
 def import_data():
