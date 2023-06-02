@@ -769,8 +769,7 @@ def import_laps():
          else:
             lap.isaccurate = df['IsAccurate'][i]
          db.session.add(lap) 
-      db.session.commit()  
-
+      db.session.commit()
    # return to home page.
    return redirect(url_for('index'))
 
