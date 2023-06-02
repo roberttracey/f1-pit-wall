@@ -104,35 +104,36 @@ app.jinja_env.filters['ordinal'] = ordinal
 @app.route('/')
 @csrf.exempt
 def index():   
-   try:
-      # get preferences. 
-      preferences = Preference.query.where(Preference.preferenceId == 1).limit(1).first()
-      # define sql query
-      query01 = 'SELECT DISTINCT r.raceid, r.date, r.name FROM laps l, races r WHERE l.raceid = r.raceid ORDER BY r.raceid DESC LIMIT 8;'
-      query01 = text(query01)
-      recent_races = db.session.execute(query01).fetchall()
-      
-      # define sql query to get valid drivers (i.e. have race laps).
-      query02 = '''SELECT driverId, forename, surname, code
-                        FROM   drivers
-                        WHERE  code IN (SELECT DISTINCT driver
-                                       FROM laps);'''
-     
-      query02 = text(query02)
-      valid_drivers = db.session.execute(query02).fetchall()
+   
+   # get preferences. 
+   preferences = Preference.query.where(Preference.preferenceId == 1).limit(1).first()
+   # define sql query
+   query01 = 'SELECT DISTINCT r.raceid, r.date, r.name FROM laps l, races r WHERE l.raceid = r.raceid ORDER BY r.raceid DESC LIMIT 8;'
+   query01 = text(query01)
+   recent_races = db.session.execute(query01).fetchall()
+   print('Races:', len(recent_races))
+   
+   # define sql query to get valid drivers (i.e. have race laps).
+   query02 = '''SELECT driverId, forename, surname, code
+                     FROM   drivers
+                     WHERE  code IN (SELECT DISTINCT driver
+                                    FROM laps);'''
+   
+   query02 = text(query02)
+   valid_drivers = db.session.execute(query02).fetchall()
 
-      # get race count.
-      races_count = Lap.query.group_by(Lap.raceId).count()
-      # get driver count.
-      driver_count = Driver.query.group_by(Driver.driverId).count()
-      # get teams count.
-      team_count = Constructor.query.group_by(Constructor.constructorId).count()
-      # get last race in laps. 
-      last_lap = Lap.query.order_by(Lap.lapId.desc()).limit(1).first()
-      # get last race based on last lap. 
-      last_race = Race.query.where(Race.raceId == last_lap.raceId).first()   
-   except:
-      return render_template('index.html')   
+   # get race count.
+   # races_count = Lap.query.group_by(Lap.raceId).count()
+   races_count = Race.query.group_by(Race.raceId).count()
+   # get driver count.
+   driver_count = Driver.query.group_by(Driver.driverId).count()
+   # get teams count.
+   team_count = Constructor.query.group_by(Constructor.constructorId).count()
+   # get last race in laps. 
+   last_lap = Lap.query.order_by(Lap.lapId.desc()).limit(1).first()
+   # get last race based on last lap. 
+   last_race = Race.query.where(Race.raceId == last_lap.raceId).first()   
+     
    # print to console. 
    print('Request for index page received')
    # go to index page, and send race data. 
@@ -993,7 +994,7 @@ def get_results(year, round):
             race_result.milliseconds = result['Time']['millis']
          else:
             race_result.time = ''
-            race_result.milliseconds = ''        
+            race_result.milliseconds = 0        
          if 'FastestLap' in result:
             race_result.fastestLap = result['FastestLap']['lap']
             race_result.rank = result['FastestLap']['rank']
