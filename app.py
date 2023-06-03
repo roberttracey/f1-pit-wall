@@ -23,8 +23,8 @@ import json
 import requests
 
 # create default race. 
-simulation = Simulation(0, 0, 0, 0)
-lap_graph = LapGraph(0, '', [])
+simulation = Simulation(1, 0, 0, 0)
+lap_graph = LapGraph(1, '', [])
 
 # check if ff1 cache folder exists.
 ff1_cache = 'fastf1'
@@ -675,8 +675,8 @@ def import_laps():
    last_lap = Lap.query.order_by(Lap.lapId.desc()).limit(1).first()
    # if table is empty, start importing from 2019.
    if last_lap is None:
-      # start_date = '2019-03-01'
-      start_date = '2023-05-21'
+      start_date = '2019-03-01'
+      # start_date = '2023-05-21'
    else:
       # get details of last race. 
       last_race = Race.query.where(Race.raceId == last_lap.raceId).limit(1).first()    
@@ -1002,10 +1002,10 @@ def get_results(year, round):
             race_result.fastestLapTime = result['FastestLap']['Time']['time']
             race_result.fastestLapSpeed = result['FastestLap']['AverageSpeed']['speed']
          else:
-            race_result.fastestLap = ''
-            race_result.rank = ''
+            race_result.fastestLap = 0
+            race_result.rank = 0
             race_result.fastestLapTime = ''
-            race_result.fastestLapSpeed = ''        
+            race_result.fastestLapSpeed = 0        
          race_result.statusId = get_statusid(result['status'])
          constructor_result.statusId = get_statusid(result['status'])
          # add to db.
@@ -1049,12 +1049,12 @@ def get_sprint_results(year, round):
             sprint_result.milliseconds = result['Time']['millis']
          else:
             sprint_result.time = ''
-            sprint_result.milliseconds = ''        
+            sprint_result.milliseconds = 0       
          if 'FastestLap' in result:
             sprint_result.fastestLap = result['FastestLap']['lap']
             sprint_result.fastestLapTime = result['FastestLap']['Time']['time']
          else:
-            sprint_result.fastestLap = ''
+            sprint_result.fastestLap = 0
             sprint_result.fastestLapTime = ''       
          sprint_result.statusId = get_statusid(result['status'])
          constructor_result.statusId = get_statusid(result['status'])
