@@ -763,11 +763,8 @@ def import_laps():
             lap.freshtyre = df['FreshTyre'][i]  
          lap.team = df['Team'][i]
          lap.lapstarttime = df['LapStartTime'][i]
-         if df['LapStartDate'][i] == 'NaT':
-            # use race date. 
-            lap.lapstartdate = r.date
-         else: 
-            lap.lapstartdate = df['LapStartDate'][i]
+         # try format date to prevent 'NaT' error. 
+         lap.lapstartdate = format_date(df['LapStartDate'][i])
          # 'str' or 'nan' causing db error in cloud. handle by converting to int. 
          lap.trackstatus = convert_to_int(df['TrackStatus'][i])         
          # check for 'nan' 
@@ -1146,7 +1143,15 @@ def convert_to_int(value):
         return int(value)
     except ValueError:
         return 1 # use 1 for track status = clear. 
-    
+
+# use this method to deal with invalied date from data sources. 
+def format_date(value):
+    try:
+        date_obj = datetime.strptime(value, '%Y-%m-%d')
+        formatted_date = date_obj.strftime('%Y-%m-%d')
+        return formatted_date
+    except (ValueError, TypeError):
+        return '1970-01-01'
     
 if __name__ == '__main__':
    app.run()
