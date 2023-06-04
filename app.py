@@ -675,8 +675,8 @@ def import_laps():
    last_lap = Lap.query.order_by(Lap.lapId.desc()).limit(1).first()
    # if table is empty, start importing from 2019.
    if last_lap is None:
-      start_date = '2019-03-01'
-      # start_date = '2023-05-21'
+      # start_date = '2019-03-01'
+      start_date = '2023-05-21'
    else:
       # get details of last race. 
       last_race = Race.query.where(Race.raceId == last_lap.raceId).limit(1).first()    
@@ -763,7 +763,11 @@ def import_laps():
             lap.freshtyre = df['FreshTyre'][i]  
          lap.team = df['Team'][i]
          lap.lapstarttime = df['LapStartTime'][i]
-         lap.lapstartdate = df['LapStartDate'][i]
+         if df['LapStartDate'][i] == 'NaT':
+            # use race date. 
+            lap.lapstartdate = r.date
+         else: 
+            lap.lapstartdate = df['LapStartDate'][i]
          # 'str' or 'nan' causing db error in cloud. handle by converting to int. 
          lap.trackstatus = convert_to_int(df['TrackStatus'][i])         
          # check for 'nan' 
@@ -1142,6 +1146,7 @@ def convert_to_int(value):
         return int(value)
     except ValueError:
         return 1 # use 1 for track status = clear. 
+    
     
 if __name__ == '__main__':
    app.run()
