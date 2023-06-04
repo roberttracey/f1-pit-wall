@@ -764,7 +764,12 @@ def import_laps():
          lap.team = df['Team'][i]
          lap.lapstarttime = df['LapStartTime'][i]
          lap.lapstartdate = df['LapStartDate'][i]
-         lap.trackstatus = df['TrackStatus'][i]
+         # lap.trackstatus = df['TrackStatus'][i]
+         if math.isnan (df['TrackStatus'][i]):
+            lap.isaccurate = 0
+         else:
+            lap.isaccurate = df['TrackStatus'][i]
+         
          # lap.isaccurate = df['IsAccurate'][i]
          if math.isnan (df['IsAccurate'][i]):
             lap.isaccurate = 0
