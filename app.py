@@ -764,13 +764,9 @@ def import_laps():
          lap.team = df['Team'][i]
          lap.lapstarttime = df['LapStartTime'][i]
          lap.lapstartdate = df['LapStartDate'][i]
-         # lap.trackstatus = df['TrackStatus'][i]
-         if isinstance(df['TrackStatus'][i], str) or math.isnan (df['TrackStatus'][i]):
-            lap.trackstatus = 0
-         else:
-            lap.trackstatus = df['TrackStatus'][i]
-         
-         # lap.isaccurate = df['IsAccurate'][i]
+         # 'str' or 'nan' causing db error in cloud. handle by converting to int. 
+         lap.trackstatus = convert_to_int(df['TrackStatus'][i])         
+         # check for 'nan' 
          if math.isnan (df['IsAccurate'][i]):
             lap.isaccurate = 0
          else:
@@ -1140,5 +1136,12 @@ def get_statusid(status_ref):
    status = Status.query.where(Status.status == status_ref).first()
    return status.statusId
 
+# use this method to convert a string to int. if unable to convert, use a default value. 
+def convert_to_int(value):
+    try:
+        return int(value)
+    except ValueError:
+        return 1 # use 1 for track status = clear. 
+    
 if __name__ == '__main__':
    app.run()
