@@ -675,7 +675,7 @@ def import_laps():
    last_lap = Lap.query.order_by(Lap.lapId.desc()).limit(1).first()
    # if table is empty, start importing from 2019.
    if last_lap is None:
-      start_date = '2023-01-01'
+      start_date = '2019-03-01'
       # start_date = '2023-05-21'
    else:
       # get details of last race. 
